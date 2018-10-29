@@ -40,34 +40,34 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\Beat Saber\Beat Saber_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>..\..\Dependencies\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="IllusionInjector">
-      <HintPath>..\..\Beat Saber\Beat Saber_Data\Managed\IllusionInjector.dll</HintPath>
+      <HintPath>..\..\Dependencies\IllusionInjector.dll</HintPath>
     </Reference>
     <Reference Include="IllusionPlugin">
-      <HintPath>..\..\Beat Saber\Beat Saber_Data\Managed\IllusionPlugin.dll</HintPath>
+      <HintPath>..\..\Dependencies\IllusionPlugin.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine">
-      <HintPath>..\..\Beat Saber\Beat Saber_Data\Managed\UnityEngine.dll</HintPath>
+      <HintPath>..\..\Dependencies\UnityEngine.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.AudioModule">
-      <HintPath>..\..\Beat Saber\Beat Saber_Data\Managed\UnityEngine.AudioModule.dll</HintPath>
+      <HintPath>..\..\Dependencies\UnityEngine.AudioModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>..\..\Beat Saber\Beat Saber_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>..\..\Dependencies\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>..\..\Beat Saber\Beat Saber_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <HintPath>..\..\Dependencies\UnityEngine.UI.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UIElementsModule">
-      <HintPath>..\..\Beat Saber\Beat Saber_Data\Managed\UnityEngine.UIElementsModule.dll</HintPath>
+      <HintPath>..\..\Dependencies\UnityEngine.UIElementsModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UnityWebRequestWWWModule">
-      <HintPath>..\..\Beat Saber\Beat Saber_Data\Managed\UnityEngine.UnityWebRequestWWWModule.dll</HintPath>
+      <HintPath>..\..\Dependencies\UnityEngine.UnityWebRequestWWWModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.VRModule">
-      <HintPath>..\..\Beat Saber\Beat Saber_Data\Managed\UnityEngine.VRModule.dll</HintPath>
+      <HintPath>..\..\Dependencies\UnityEngine.VRModule.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
