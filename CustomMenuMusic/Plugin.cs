@@ -5,8 +5,9 @@ namespace CustomMenuMusic
 {
     public class Plugin : IPlugin
     {
-        public string Name => "CustomMenuMusic";
-        public string Version => "0.1.0";
+        public string Name => "Custom Menu Music";
+        public string Version => "1.1.3";
+
         public void OnApplicationStart()
         {
             SceneManager.activeSceneChanged += SceneManagerOnActiveSceneChanged;
