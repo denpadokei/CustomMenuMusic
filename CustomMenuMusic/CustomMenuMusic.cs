@@ -23,7 +23,7 @@ namespace CustomMenuMusic
 
         public static void OnLoad()
         {
-            if(instance == null)
+            if (instance == null)
             {
                 instance = new GameObject("CustomMenuMusic").AddComponent<CustomMenuMusic>();
             }
@@ -75,7 +75,7 @@ namespace CustomMenuMusic
 
             printToLog("Found " + AllSongsfilepaths.Length + " custom menu songs");
 
-          
+
         }
 
 
@@ -103,7 +103,7 @@ namespace CustomMenuMusic
             return filePaths;
         }
 
-        
+
         private string[] GetAllCustomSongs()
         {
             string[] filePaths = DirSearch("CustomSongs").ToArray();
@@ -137,11 +137,11 @@ namespace CustomMenuMusic
 
 
         private void GetNewSong()
-        {           
+        {
             var a = UnityEngine.Random.Range(0, AllSongsfilepaths.Length);
             musicPath = AllSongsfilepaths[a];
         }
-      
+
 
         IEnumerator LoadAudioClip()
         {
@@ -167,14 +167,14 @@ namespace CustomMenuMusic
             {
                 printToLog("Can't load audio! Exception: " + e);
             }
-             
+
 
             if (_previewPlayer != null && _menuMusic != null)
             {
                 printToLog("Applying custom menu music...");
                 _previewPlayer.SetPrivateField("_defaultAudioClip", _menuMusic);
                 _previewPlayer.CrossfadeToDefault();
-                
+
             }
         }
     }
