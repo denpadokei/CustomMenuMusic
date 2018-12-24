@@ -29,21 +29,12 @@ namespace CustomMenuMusic
             SceneManager.sceneLoaded -= SceneManager_sceneLoaded;
         }
 
-        public void OnLevelWasLoaded(int level)
-        {
+        public void OnLevelWasLoaded(int level) { }
 
-        }
+        public void OnLevelWasInitialized(int level) { }
 
-        public void OnLevelWasInitialized(int level)
-        {
-        }
+        public void OnUpdate() { }
 
-        public void OnUpdate()
-        {
-        }
-
-        public void OnFixedUpdate()
-        {
-        }
+        public void OnFixedUpdate() { }
     }
 }
