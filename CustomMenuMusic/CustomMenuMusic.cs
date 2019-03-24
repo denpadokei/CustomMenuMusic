@@ -18,7 +18,7 @@ namespace CustomMenuMusic
         SongPreviewPlayer _previewPlayer = new SongPreviewPlayer();
 
         string musicPath;
-        string optionName = "UseCustomMenuSongs";
+        const string optionName = "UseCustomMenuSongs";
 
         string[] AllSongFilePaths = new string[0];
 
@@ -26,14 +26,13 @@ namespace CustomMenuMusic
         {
             if (instance == null)
                 instance = new GameObject("CustomMenuMusic").AddComponent<CustomMenuMusic>();
-
         }
 
         public void Awake()
         {
             DontDestroyOnLoad(this);
 
-            SceneManager.sceneLoaded += SceneLoaded;
+            SceneManager.activeSceneChanged += ActiveSceneChanged;
 
             if (!Directory.Exists("CustomMenuSongs"))
                 Directory.CreateDirectory("CustomMenuSongs");
@@ -41,29 +40,19 @@ namespace CustomMenuMusic
             GetSongsList();
         }
 
-        private void SceneLoaded(Scene arg0, LoadSceneMode arg1)
+        private void ActiveSceneChanged(Scene arg0, Scene arg1)
         {
-            if (arg0.name == "Menu")
-            {
-                if (!_previewPlayer == Resources.FindObjectsOfTypeAll<SongPreviewPlayer>().First())
-                {
-                    _previewPlayer = Resources.FindObjectsOfTypeAll<SongPreviewPlayer>().First();
-
+            Logger.Log("Entered: " + arg1.name);
+            if (arg1.name == "MenuCore")
                     StartCoroutine(LoadAudioClip());
-                }
-            }
         }
 
         private void GetSongsList()
         {
             if (CheckOptions())
-            {
                 AllSongFilePaths = GetAllCustomMenuSongs();
-            }
             else
-            {
                 AllSongFilePaths = GetAllCustomSongs();
-            }
 
             Logger.Log("Found " + AllSongFilePaths.Length + " Custom Menu Songs");
         }
@@ -76,18 +65,14 @@ namespace CustomMenuMusic
         private string[] GetAllCustomMenuSongs()
         {
             if (!Directory.Exists("CustomMenuSongs"))
-            {
                 Directory.CreateDirectory("CustomMenuSongs");
-            }
 
             string[] filePaths = Directory.GetFiles("CustomMenuSongs", "*.ogg");
 
             Logger.Log("CustomMenuSongs files found " + filePaths.Length);
 
             if (filePaths.Length == 0)
-            {
                 filePaths = GetAllCustomSongs();
-            }
 
             return filePaths;
         }
@@ -109,30 +94,29 @@ namespace CustomMenuMusic
                     files.AddRange(Directory.GetFiles(d, "*.ogg"));
 
                     foreach (string f in Directory.GetDirectories(d))
-                    {
                         files.AddRange(Directory.GetFiles(f, "*.ogg"));
-                    }
                 }
             }
-            catch (System.Exception excpt)
+            catch (System.Exception e)
             {
-                Console.WriteLine("[CustomMenuMusic] " + excpt);
+                Logger.Log(e);
             }
-
             return files;
         }
 
         private void GetNewSong()
         {
             UnityEngine.Random.InitState(Environment.TickCount);
-            var a = UnityEngine.Random.Range(0, AllSongFilePaths.Length);
-            musicPath = AllSongFilePaths[a];
+            int index = UnityEngine.Random.Range(0, AllSongFilePaths.Length);
+            musicPath = AllSongFilePaths[index];
         }
 
         IEnumerator LoadAudioClip()
         {
-            GetNewSong();
+            yield return new WaitUntil(() => _previewPlayer = Resources.FindObjectsOfTypeAll<SongPreviewPlayer>().First());
+            _previewPlayer.enabled = false;
 
+            GetNewSong();
             Logger.Log("Loading file @ " + musicPath);
             WWW data = new WWW(Environment.CurrentDirectory + "\\" + musicPath);
             yield return data;
@@ -150,10 +134,10 @@ namespace CustomMenuMusic
                 Logger.Log("Can't load audio! Exception: " + e);
             }
 
+
             if (_previewPlayer != null && _menuMusic != null)
             {
-                Logger.Log("Applying custom menu music...");
-
+                _previewPlayer.enabled = true;
                 _previewPlayer.SetField("_defaultAudioClip", _menuMusic);
                 _previewPlayer.CrossfadeToDefault();
             }
