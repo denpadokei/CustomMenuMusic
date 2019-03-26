@@ -15,7 +15,7 @@ namespace CustomMenuMusic
         public static CustomMenuMusic instance;
 
         AudioClip _menuMusic;
-        SongPreviewPlayer _previewPlayer = new SongPreviewPlayer();
+        SongPreviewPlayer _previewPlayer;
 
         string musicPath;
         const string optionName = "UseCustomMenuSongs";
@@ -114,7 +114,7 @@ namespace CustomMenuMusic
         IEnumerator LoadAudioClip()
         {
             yield return new WaitUntil(() => _previewPlayer = Resources.FindObjectsOfTypeAll<SongPreviewPlayer>().First());
-            _previewPlayer.enabled = false;
+            _previewPlayer.GetField<AudioSource[]>("_audioSources")[_previewPlayer.GetField<int>("_activeChannel")].Stop();
 
             GetNewSong();
             Logger.Log("Loading file @ " + musicPath);
@@ -134,12 +134,17 @@ namespace CustomMenuMusic
                 Logger.Log("Can't load audio! Exception: " + e);
             }
 
-
             if (_previewPlayer != null && _menuMusic != null)
             {
-                _previewPlayer.enabled = true;
-                _previewPlayer.SetField("_defaultAudioClip", _menuMusic);
-                _previewPlayer.CrossfadeToDefault();
+                try
+                {
+                    _previewPlayer.SetField("_defaultAudioClip", _menuMusic);
+                    _previewPlayer.CrossfadeToDefault();
+                }
+                catch (Exception e)
+                {
+                    Logger.Log($"Oops! - {e.StackTrace}");
+                }
             }
         }
     }
