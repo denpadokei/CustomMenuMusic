@@ -6,7 +6,7 @@ namespace CustomMenuMusic
     public class Plugin : IPlugin
     {
         public string Name => "Custom Menu Music";
-        public string Version => "1.2.0";
+        public string Version => "1.3.0";
 
         public void OnApplicationStart()
         {

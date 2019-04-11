@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using CustomMenuMusic.Misc;
 using Logger = CustomMenuMusic.Misc.Logger;
+using UnityEngine.Networking;
 
 namespace CustomMenuMusic
 {
@@ -38,6 +39,7 @@ namespace CustomMenuMusic
                 Directory.CreateDirectory("CustomMenuSongs");
 
             GetSongsList();
+
         }
 
         private void ActiveSceneChanged(Scene arg0, Scene arg1)
@@ -72,7 +74,10 @@ namespace CustomMenuMusic
             Logger.Log("CustomMenuSongs files found " + filePaths.Length);
 
             if (filePaths.Length == 0)
-                filePaths = GetAllCustomSongs();
+            {
+                ResourceUtil.ExtractEmbeddedResource(Path.Combine(Environment.CurrentDirectory, "CustomMenuSongs"), "CustomMenuMusic.BuiltInSongs", new List<string> { "despacito.ogg" });
+                filePaths = Directory.GetFiles("CustomMenuSongs", "*.ogg");
+            }
 
             return filePaths;
         }
@@ -118,11 +123,11 @@ namespace CustomMenuMusic
 
             GetNewSong();
             Logger.Log("Loading file @ " + musicPath);
-            WWW data = new WWW(Environment.CurrentDirectory + "\\" + musicPath);
-            yield return data;
+            UnityWebRequest songe = UnityWebRequestMultimedia.GetAudioClip($"{Environment.CurrentDirectory}\\{musicPath}", AudioType.OGGVORBIS);
+            yield return songe.SendWebRequest();
             try
             {
-                _menuMusic = data.GetAudioClipCompressed(false, AudioType.OGGVORBIS) as AudioClip;
+                _menuMusic = DownloadHandlerAudioClip.GetContent(songe);
 
                 if (_menuMusic != null)
                     _menuMusic.name = Path.GetFileName(musicPath);
@@ -133,6 +138,8 @@ namespace CustomMenuMusic
             {
                 Logger.Log("Can't load audio! Exception: " + e);
             }
+
+            yield return new WaitUntil(() => _menuMusic);
 
             if (_previewPlayer != null && _menuMusic != null)
             {
