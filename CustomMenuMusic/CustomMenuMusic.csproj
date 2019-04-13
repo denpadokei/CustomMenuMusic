@@ -52,7 +52,6 @@
     <Reference Include="UnityEngine.CoreModule" />
     <Reference Include="UnityEngine.UnityWebRequestAudioModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="UnityEngine.UnityWebRequestModule" />
-    <Reference Include="UnityEngine.UnityWebRequestWWWModule" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="BuiltInSongs\despacito.ogg" />

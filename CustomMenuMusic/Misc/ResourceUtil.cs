@@ -12,6 +12,7 @@ namespace CustomMenuMusic.Misc
         {
             foreach (string file in files)
             {
+                Logger.Log(file);
                 using (System.IO.Stream stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceLocation + "." + file))
                 {
                     using (System.IO.FileStream fileStream = new System.IO.FileStream(System.IO.Path.Combine(outputDir, file), System.IO.FileMode.Create))

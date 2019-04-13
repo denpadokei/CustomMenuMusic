@@ -20,6 +20,7 @@ namespace CustomMenuMusic
 
         string musicPath;
         const string optionName = "UseCustomMenuSongs";
+        const string builtInSongsFolder = "CustomMenuMusic.BuiltInSongs";
 
         string[] AllSongFilePaths = new string[0];
 
@@ -69,14 +70,16 @@ namespace CustomMenuMusic
             if (!Directory.Exists("CustomMenuSongs"))
                 Directory.CreateDirectory("CustomMenuSongs");
 
-            string[] filePaths = Directory.GetFiles("CustomMenuSongs", "*.ogg");
+            string[] filePaths = Directory.GetFiles("CustomMenuSongs", "*.*").Where(file => file.ToLower().EndsWith("ogg") || file.ToLower().EndsWith("mp3")).ToArray();
 
             Logger.Log("CustomMenuSongs files found " + filePaths.Length);
 
             if (filePaths.Length == 0)
             {
-                ResourceUtil.ExtractEmbeddedResource(Path.Combine(Environment.CurrentDirectory, "CustomMenuSongs"), "CustomMenuMusic.BuiltInSongs", new List<string> { "despacito.ogg" });
-                filePaths = Directory.GetFiles("CustomMenuSongs", "*.ogg");
+                foreach (String s in System.Reflection.Assembly.GetCallingAssembly().GetManifestResourceNames())
+                    Logger.Log(s);
+                ResourceUtil.ExtractEmbeddedResource(Path.Combine(Environment.CurrentDirectory, "CustomMenuSongs"), "CustomMenuMusic.BuiltInSongs", System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceNames().Where(file => file.StartsWith(builtInSongsFolder)).Select(file => file.Substring(builtInSongsFolder.Length + 1)).ToList());
+                filePaths = Directory.GetFiles("CustomMenuSongs", "*.*").Where(file => file.ToLower().EndsWith("ogg") || file.ToLower().EndsWith("mp3")).ToArray();
             }
 
             return filePaths;
@@ -122,7 +125,10 @@ namespace CustomMenuMusic
             _previewPlayer.GetField<AudioSource[]>("_audioSources")[_previewPlayer.GetField<int>("_activeChannel")].Stop();
 
             GetNewSong();
-            Logger.Log("Loading file @ " + musicPath);
+            if (musicPath.EndsWith("despacito.ogg"))
+                Logger.Log("This is so sad, Beat Saber play Despacito");
+            else
+                Logger.Log("Loading file @ " + musicPath);
             UnityWebRequest songe = UnityWebRequestMultimedia.GetAudioClip($"{Environment.CurrentDirectory}\\{musicPath}", AudioType.OGGVORBIS);
             yield return songe.SendWebRequest();
             try
