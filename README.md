@@ -10,7 +10,9 @@ To use songs from the `BeatSaber\CustomSongs` folder, simply go into `Beat Saber
 
 To disable the Now Playing feature, set `ShowNowPlaying` to `False`.
 
-All songs files **HAVE** to be `.ogg` format *(I tried to support MP3s, unfortunately it's not possible)*. The Now Playing feature will pull the name from `info.json` if available *(i.e. a CustomSongs song)*, otherwise it will use the filename without the extension.
+All songs files **HAVE** to be `.ogg` format *(I tried to support MP3s, unfortunately it's not possible)*. 
+
+The Now Playing feature will pull the name from `info.json` if available *(i.e. a CustomSongs song)*, otherwise it will use the filename without the extension.
 
 Thanks to **andruzzzhka** and **Lunikc** for their base code.
 
