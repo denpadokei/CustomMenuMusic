@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CustomMenuMusic.Misc
+namespace CustomMenuMusic.Util
 {
     class ResourceUtil
     {

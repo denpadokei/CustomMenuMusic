@@ -1,40 +1,40 @@
-﻿using IllusionPlugin;
+﻿using IPA;
 using UnityEngine.SceneManagement;
 
 namespace CustomMenuMusic
 {
-    public class Plugin : IPlugin
+    public class Plugin : IBeatSaberPlugin
     {
         public string Name => "Custom Menu Music";
-        public string Version => "1.3.0";
+        public string Version => "1.5.0";
 
-        public void OnApplicationStart()
+        public void Init(IPA.Logging.Logger log)
         {
-            SceneManager.activeSceneChanged += SceneManagerOnActiveSceneChanged;
-            SceneManager.sceneLoaded += SceneManager_sceneLoaded;
+            Util.Logger.logger = log;
+
+            SceneManager.activeSceneChanged += OnActiveSceneChanged;
+            SceneManager.sceneLoaded += OnSceneLoaded;
         }
 
-        private void SceneManagerOnActiveSceneChanged(Scene arg0, Scene arg1)
-        {
-        }
+        public void OnApplicationStart() { }
 
-        private void SceneManager_sceneLoaded(Scene arg0, LoadSceneMode arg1)
+        public void OnActiveSceneChanged(Scene prevScene, Scene nextScene) { }
+
+        public void OnSceneLoaded(Scene scene, LoadSceneMode sceneMode)
         {
             CustomMenuMusic.OnLoad();
         }
 
         public void OnApplicationQuit()
         {
-            SceneManager.activeSceneChanged -= SceneManagerOnActiveSceneChanged;
-            SceneManager.sceneLoaded -= SceneManager_sceneLoaded;
+            SceneManager.activeSceneChanged -= OnActiveSceneChanged;
+            SceneManager.sceneLoaded -= OnSceneLoaded;
         }
-
-        public void OnLevelWasLoaded(int level) { }
-
-        public void OnLevelWasInitialized(int level) { }
 
         public void OnUpdate() { }
 
         public void OnFixedUpdate() { }
+
+        public void OnSceneUnloaded(Scene scene) { }
     }
 }
