@@ -5,32 +5,44 @@ using System.IO;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using CustomMenuMusic.Misc;
-using Logger = CustomMenuMusic.Misc.Logger;
+using Logger = CustomMenuMusic.Util.Logger;
+using BS_Utils.Utilities;
 using UnityEngine.Networking;
 
 namespace CustomMenuMusic
 {
     class CustomMenuMusic : MonoBehaviour
     {
-        public static CustomMenuMusic instance;
+        static CustomMenuMusic instance;
 
         AudioClip _menuMusic;
         SongPreviewPlayer _previewPlayer;
+        Config config;
 
-        string musicPath;
-        const string optionName = "UseCustomMenuSongs";
-        const string builtInSongsFolder = "CustomMenuMusic.BuiltInSongs";
+        private string musicPath;
+        private const string useMenuSongsOption = "UseCustomMenuSongs";
+        private const string showNowPlayingOption = "ShowNowPlaying";
+        private const string builtInSongsFolder = "CustomMenuMusic.BuiltInSongs";
 
-        string[] AllSongFilePaths = new string[0];
+        private string[] AllSongFilePaths = new string[0];
 
-        public static void OnLoad()
+        private bool UseMenuSongs
+        {
+            get { return config.GetBool("CustomMenuMusic", useMenuSongsOption, true, true); }
+        }
+
+        private bool ShowNowPlaying
+        {
+            get { return config.GetBool("CustomMenuMusic", showNowPlayingOption, true, true); }
+        }
+
+        internal static void OnLoad()
         {
             if (instance == null)
                 instance = new GameObject("CustomMenuMusic").AddComponent<CustomMenuMusic>();
         }
 
-        public void Awake()
+        private void Awake()
         {
             DontDestroyOnLoad(this);
 
@@ -39,30 +51,31 @@ namespace CustomMenuMusic
             if (!Directory.Exists("CustomMenuSongs"))
                 Directory.CreateDirectory("CustomMenuSongs");
 
-            GetSongsList();
+            config = new Config("CustomMenuMusic");
+            Logger.Log($"{useMenuSongsOption}: {UseMenuSongs}", Logger.LogLevel.Debug);
+            Logger.Log($"{showNowPlayingOption}: {ShowNowPlaying}", Logger.LogLevel.Debug);
 
+            GetSongsList();
         }
 
         private void ActiveSceneChanged(Scene arg0, Scene arg1)
         {
-            Logger.Log("Entered: " + arg1.name);
             if (arg1.name == "MenuCore")
-                    StartCoroutine(LoadAudioClip());
+            {
+                if (ShowNowPlaying)
+                    NowPlaying.OnLoad();
+
+                StartCoroutine(LoadAudioClip());
+            }
         }
 
         private void GetSongsList()
         {
-            if (CheckOptions())
+            if (UseMenuSongs)
                 AllSongFilePaths = GetAllCustomMenuSongs();
             else
                 AllSongFilePaths = GetAllCustomSongs();
 
-            Logger.Log("Found " + AllSongFilePaths.Length + " Custom Menu Songs");
-        }
-
-        private bool CheckOptions()
-        {
-            return IllusionPlugin.ModPrefs.GetBool("CustomMenuMusic", optionName, true, true); ;
         }
 
         private string[] GetAllCustomMenuSongs()
@@ -70,26 +83,25 @@ namespace CustomMenuMusic
             if (!Directory.Exists("CustomMenuSongs"))
                 Directory.CreateDirectory("CustomMenuSongs");
 
-            string[] filePaths = Directory.GetFiles("CustomMenuSongs", "*.*").Where(file => file.ToLower().EndsWith("ogg") || file.ToLower().EndsWith("mp3")).ToArray();
+            string[] AllSongsFilePaths = Directory.GetFiles("CustomMenuSongs", "*.*").Where(file => file.ToLower().EndsWith("ogg")).ToArray();
 
-            Logger.Log("CustomMenuSongs files found " + filePaths.Length);
+            Logger.Log($"Found {AllSongFilePaths.Length} songs in CustomMenuSongs.", (AllSongFilePaths.Length > 0) ? Logger.LogLevel.Notice : Logger.LogLevel.Warning);
 
-            if (filePaths.Length == 0)
+            if (AllSongsFilePaths.Length == 0)
             {
-                foreach (String s in System.Reflection.Assembly.GetCallingAssembly().GetManifestResourceNames())
-                    Logger.Log(s);
-                ResourceUtil.ExtractEmbeddedResource(Path.Combine(Environment.CurrentDirectory, "CustomMenuSongs"), "CustomMenuMusic.BuiltInSongs", System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceNames().Where(file => file.StartsWith(builtInSongsFolder)).Select(file => file.Substring(builtInSongsFolder.Length + 1)).ToList());
-                filePaths = Directory.GetFiles("CustomMenuSongs", "*.*").Where(file => file.ToLower().EndsWith("ogg") || file.ToLower().EndsWith("mp3")).ToArray();
+                AllSongsFilePaths = GetAllCustomSongs();
             }
 
-            return filePaths;
+            return AllSongsFilePaths;
         }
 
         private string[] GetAllCustomSongs()
         {
-            string[] filePaths = DirSearch("CustomSongs").ToArray();
+            string[] AllSongsFilePaths = DirSearch("CustomSongs").ToArray();
 
-            return filePaths;
+            Logger.Log($"Found {AllSongFilePaths.Length} songs in CustomSongs.", Logger.LogLevel.Notice);
+
+            return AllSongsFilePaths;
         }
 
         private List<String> DirSearch(string sDir)
@@ -107,7 +119,7 @@ namespace CustomMenuMusic
             }
             catch (System.Exception e)
             {
-                Logger.Log(e);
+                Logger.Log(e.StackTrace, Logger.LogLevel.Error);
             }
             return files;
         }
@@ -126,7 +138,7 @@ namespace CustomMenuMusic
 
             GetNewSong();
             if (musicPath.EndsWith("despacito.ogg"))
-                Logger.Log("This is so sad, Beat Saber play Despacito");
+                Logger.Log("This is so sad, Beat Saber play Despacito", Logger.LogLevel.Notice);
             else
                 Logger.Log("Loading file @ " + musicPath);
             UnityWebRequest songe = UnityWebRequestMultimedia.GetAudioClip($"{Environment.CurrentDirectory}\\{musicPath}", AudioType.OGGVORBIS);
@@ -138,11 +150,11 @@ namespace CustomMenuMusic
                 if (_menuMusic != null)
                     _menuMusic.name = Path.GetFileName(musicPath);
                 else
-                    Logger.Log("No audio found!");
+                    Logger.Log("No audio found!", Logger.LogLevel.Warning);
             }
             catch (Exception e)
             {
-                Logger.Log("Can't load audio! Exception: " + e);
+                Logger.Log("Can't load audio! Exception: " + e, Logger.LogLevel.Error);
             }
 
             yield return new WaitUntil(() => _menuMusic);
@@ -153,10 +165,11 @@ namespace CustomMenuMusic
                 {
                     _previewPlayer.SetField("_defaultAudioClip", _menuMusic);
                     _previewPlayer.CrossfadeToDefault();
+                    NowPlaying.instance.SetCurrentSong(musicPath);
                 }
                 catch (Exception e)
                 {
-                    Logger.Log($"Oops! - {e.StackTrace}");
+                    Logger.Log($"Oops! - {e.StackTrace}", Logger.LogLevel.Error);
                 }
             }
         }
