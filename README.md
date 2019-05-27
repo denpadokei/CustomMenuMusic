@@ -1,23 +1,19 @@
 # CustomMenuMusic
 
 ## Custom Menu Music v1.5.0
-Changes the music in the menu! You can use either a randomly selected song from your CustomSongs folder, or add your own music to the `BeatSaber\CustomMenuSongs` folder.
+Changes the music in the menu! You can use either a randomly selected song from your Custom Songs library, or add your own music to the `BeatSaber\CustomMenuSongs` folder.
 
 ### Configuration
-By default it reads the `BeatSaber\CustomMenuSongs` folder. If this folder does not exist, it will be created for you.
+By default it reads from your Custom Songs library.
 
-To use songs from the `BeatSaber\CustomSongs` folder, simply go into `Beat Saber\UserData\CustomMenuMusic.ini` and change `UseCustomMenuSongs` to `False`.
+Settings to change the menu song source, as well as other features (such as the new **Now Playing** feature) are accessible from the settings menu in game.
 
-To disable the Now Playing feature, set `ShowNowPlaying` to `False`.
+All song files **HAVE** to be `.ogg` format. 
 
-All songs files **HAVE** to be `.ogg` format *(I tried to support MP3s, unfortunately it's not possible)*. 
-
-The Now Playing feature will pull the name from `info.json` if available *(i.e. a CustomSongs song)*, otherwise it will use the filename without the extension.
-
-Thanks to **andruzzzhka** and **Lunikc** for their base code.
+Thanks to **andruzzzhka**, **Lunikc**, and **lolPants** for their base code. Special thanks to **Klouder** for the cute icon in the BSIPA Mods List.
 
 #### Changelog :
-- **v1.5.0** : *Refactored some code. Added UI to show the currently playing song.*
+- **v1.5.0** : *Refactored **a lot**. Added Settings UI, Now Playing feature, volume controls, and loop toggle. Updated BSIPA Mod List entry.*
 - **v1.4.0** : *Updated to 1.0.0 and BSIPA. Removed Despacito.*
 - **v1.3.0** : *Updated to 0.13.2. If user has no songs in their CustomMenuSongs folder, Despacito is added*
 - **v1.1.2** : *Now default setting is CustomMenuSongs and reads CustomSongs if empty.*
