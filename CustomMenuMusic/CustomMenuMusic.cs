@@ -55,7 +55,7 @@ namespace CustomMenuMusic
             if (Input.GetKeyDown(KeyCode.N))
                 StartCoroutine(LoadAudioClip());
 
-            if (!Config.Loop || !_currentAudioSource || _previewPlayer?.GetField<int>("_activeChannel") != _currentAudioSourceIndex) return;
+            if (Config.Loop || !_currentAudioSource || _previewPlayer?.GetField<int>("_activeChannel") != _currentAudioSourceIndex) return;
 
             if (_currentAudioSource?.time < _currentSongTime)
             {
@@ -163,20 +163,26 @@ namespace CustomMenuMusic
                 Logger.Log("Loading file @ " + musicPath);
             UnityWebRequest songe = UnityWebRequestMultimedia.GetAudioClip($"{Environment.CurrentDirectory}\\{musicPath}", AudioType.OGGVORBIS);
             yield return songe.SendWebRequest();
-            try
-            {
-                _menuMusic = DownloadHandlerAudioClip.GetContent(songe);
 
-                if (_menuMusic != null)
-                    _menuMusic.name = Path.GetFileName(musicPath);
-                else
-                    Logger.Log("No audio found!", Logger.LogLevel.Warning);
-            }
-            catch (Exception e)
+            if (songe.error != null)
+                Logger.Log($"Unity Web Request Failed! Error: {songe.error}", Logger.LogLevel.Error);
+            else
             {
-                Logger.Log("Can't load audio! Exception: " + e, Logger.LogLevel.Error);
-                StartCoroutine(LoadAudioClip());
-                yield break;
+                try
+                {
+                    _menuMusic = DownloadHandlerAudioClip.GetContent(songe);
+
+                    if (_menuMusic != null)
+                        _menuMusic.name = Path.GetFileName(musicPath);
+                    else
+                        Logger.Log("No audio found!", Logger.LogLevel.Warning);
+                }
+                catch (Exception e)
+                {
+                    Logger.Log("Can't load audio! Exception: " + e, Logger.LogLevel.Error);
+                    StartCoroutine(LoadAudioClip());
+                    yield break;
+                }
             }
 
             yield return new WaitUntil(() => _menuMusic);
