@@ -20,14 +20,13 @@ namespace CustomMenuMusic
 
         private AudioSource _currentAudioSource;
         private int _currentAudioSourceIndex;
-        private float _currentSongTime;
         private bool _sceneDidTransition = false;
+        private bool _isLoadingAudioClip = false;
 
         private string musicPath;
         private const string builtInSongsFolder = "CustomMenuMusic.BuiltInSongs";
 
-        private readonly string OldCustomSongsPath = "CustomSongs";
-        private readonly string NewCustomSongsPath = "Beat Saber_Data\\CustomLevels";
+        private readonly string CustomSongsPath = "Beat Saber_Data\\CustomLevels";
         private readonly string CustomMenuSongsPath = "CustomMenuSongs";
 
         private string[] AllSongFilePaths = new string[0];
@@ -40,7 +39,7 @@ namespace CustomMenuMusic
 
         private void Awake()
         {
-            DontDestroyOnLoad(this);
+            DontDestroyOnLoad(this.gameObject);
 
             SceneManager.activeSceneChanged += ActiveSceneChanged;
 
@@ -55,16 +54,17 @@ namespace CustomMenuMusic
             if (Input.GetKeyDown(KeyCode.N))
                 StartCoroutine(LoadAudioClip());
 
-            if (Config.Loop || !_currentAudioSource || _previewPlayer?.GetField<int>("_activeChannel") != _currentAudioSourceIndex) return;
+            if (Config.Loop || !_previewPlayer || _isLoadingAudioClip) return;
 
-            if (_currentAudioSource?.time < _currentSongTime)
+            try
             {
-                _currentSongTime = 0;
-                _currentAudioSource = null;
-                StartCoroutine(LoadAudioClip());
+                if (!_previewPlayer.GetField<AudioSource[]>("_audioSources")[_previewPlayer.GetField<int>("_activeChannel")].isPlaying)
+                    StartCoroutine(LoadAudioClip());
             }
-            else
-                _currentSongTime = (float) _currentAudioSource?.time;
+            catch (Exception e)
+            {
+                Logger.Log($"Failed to get AudioSource - {_previewPlayer.GetField<int>("_activeChannel")}", Logger.LogLevel.Warning);
+            }
         }
 
         private void ActiveSceneChanged(Scene arg0, Scene arg1)
@@ -111,9 +111,7 @@ namespace CustomMenuMusic
 
         private string[] GetAllCustomSongs()
         {
-            string[] OldCustomSongs = DirSearch(OldCustomSongsPath).ToArray();
-            string[] NewCustomSongs = DirSearch(NewCustomSongsPath).ToArray();
-            string[] FilePaths = OldCustomSongs.Concat(NewCustomSongs).ToArray();
+            string[] FilePaths = DirSearch(CustomSongsPath).ToArray();
 
             Logger.Log($"Found {FilePaths.Length} Custom Songs.", Logger.LogLevel.Notice);
 
@@ -127,10 +125,10 @@ namespace CustomMenuMusic
             {
                 foreach (string d in Directory.GetDirectories(sDir))
                 {
-                    files.AddRange(Directory.GetFiles(d, "*.ogg"));
+                    files.AddRange(Directory.GetFiles(d, "*.egg"));
 
                     foreach (string f in Directory.GetDirectories(d))
-                        files.AddRange(Directory.GetFiles(f, "*.ogg"));
+                        files.AddRange(Directory.GetFiles(f, "*.egg"));
                 }
             }
             catch (System.Exception e)
@@ -149,6 +147,7 @@ namespace CustomMenuMusic
 
         IEnumerator LoadAudioClip()
         {
+            _isLoadingAudioClip = true;
             yield return new WaitUntil(() => _previewPlayer = Resources.FindObjectsOfTypeAll<SongPreviewPlayer>().First());
             if (_sceneDidTransition)
             {
@@ -197,9 +196,9 @@ namespace CustomMenuMusic
 
                     _currentAudioSourceIndex = _previewPlayer.GetField<int>("_activeChannel");
                     _currentAudioSource = _previewPlayer.GetField<AudioSource[]>("_audioSources")[_currentAudioSourceIndex];
-                    _currentSongTime = 0;
+                    _currentAudioSource.loop = Config.Loop;
 
-                    if ((bool) NowPlaying.instance?.enabled)
+                    if (Config.ShowNowPlaying && (bool) NowPlaying.instance)
                         NowPlaying.instance?.SetCurrentSong(musicPath);
                 }
                 catch (Exception e)
@@ -208,6 +207,7 @@ namespace CustomMenuMusic
                     StartCoroutine(LoadAudioClip());
                 }
             }
+            _isLoadingAudioClip = false;
         }
     }
 }

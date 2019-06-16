@@ -7,7 +7,7 @@ namespace CustomMenuMusic
     {
         public string Name => "Custom Menu Music";
         public string ID => "CustomMenuMusic";
-        public string Version => "1.5.0";
+        public string Version => "1.5.2";
 
         public void Init(IPA.Logging.Logger log)
         {

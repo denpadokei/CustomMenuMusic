@@ -69,7 +69,7 @@ namespace CustomMenuMusic
             set
             {
                 config.SetBool(sectionNowPlaying, showNowPlaying, value);
-                NowPlaying.instance.enabled = value;
+                //NowPlaying.instance.enabled = value;
             }
         }
 
