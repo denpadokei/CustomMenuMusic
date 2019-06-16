@@ -58,7 +58,7 @@ namespace CustomMenuMusic
 
             try
             {
-                if (!_previewPlayer.GetField<AudioSource[]>("_audioSources")[_previewPlayer.GetField<int>("_activeChannel")].isPlaying)
+                if ((bool) !_previewPlayer.GetField<AudioSource[]>("_audioSources")[_previewPlayer.GetField<int>("_activeChannel")]?.isPlaying)
                     StartCoroutine(LoadAudioClip());
             }
             catch (Exception e)
