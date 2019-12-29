@@ -7,12 +7,11 @@ namespace CustomMenuMusic
     {
         public string Name => "Custom Menu Music";
         public string ID => "CustomMenuMusic";
-        public string Version => "1.5.2";
+        public string Version => "1.5.3";
 
         public void Init(IPA.Logging.Logger log)
         {
             Util.Logger.logger = log;
-            Config.Init();
 
             SceneManager.activeSceneChanged += OnActiveSceneChanged;
             SceneManager.sceneLoaded += OnSceneLoaded;
@@ -25,7 +24,7 @@ namespace CustomMenuMusic
         public void OnSceneLoaded(Scene scene, LoadSceneMode sceneMode)
         {
             if (scene.name == "MenuCore")
-                SettingsMenu.CreateSettingsUI();
+                Config.instance.CreateSettingsUI();
             CustomMenuMusic.OnLoad();
         }
 
@@ -42,7 +41,7 @@ namespace CustomMenuMusic
         public void OnSceneUnloaded(Scene scene)
         {
             if (scene.name == "MenuCore")
-                SettingsMenu.initialized = false;
+                Config.initialized = false;
         }
     }
 }
