@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BeatSaberMarkupLanguage.Attributes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,99 +7,69 @@ using System.Threading.Tasks;
 
 namespace CustomMenuMusic
 {
-    static class Config
+    partial class Config : PersistentSingleton<Config>
     {
-        static BS_Utils.Utilities.Config config;
+        BS_Utils.Utilities.Config config = new BS_Utils.Utilities.Config(configName);
 
         static readonly string configName = "CustomMenuMusic";
         static readonly string sectionCore = "Core";
         static readonly string sectionNowPlaying = "NowPlaying";
 
-        internal static void Init()
+
+        readonly string useCustomMenuSongs = "UseCustomMenuSongs";
+        readonly string loop = "Loop";
+        readonly string menuMusicVolume = "MenuMusicVolume";
+        readonly string showNowPlaying = "ShowNowPlaying";
+        readonly string nowPlayingLocation = "NowPlayingLocation";
+        readonly string nowPlayingColor = "NowPlayingColor";
+
+        Config()
         {
-            config = new BS_Utils.Utilities.Config(configName);
+            Load();
         }
 
-        static readonly string useCustomMenuSongs = "UseCustomMenuSongs";
-        internal static bool UseCustomMenuSongs
+        internal void Load()
         {
-            get
-            {
-                return config.GetBool(sectionCore, useCustomMenuSongs, false, true);
-            }
-            set
-            {
-                config.SetBool(sectionCore, useCustomMenuSongs, value);
-                CustomMenuMusic.instance.GetSongsList(value);
-            }
+            Util.Logger.Log("Loading config!");
+
+            UseCustomMenuSongs = config.GetBool(sectionCore, useCustomMenuSongs, false, true);
+            Loop = config.GetBool(sectionCore, loop, false, true);
+            MenuMusicVolume = config.GetFloat(sectionCore, menuMusicVolume, 0.5f, true);
+            ShowNowPlaying = config.GetBool(sectionNowPlaying, showNowPlaying, true, true);
+            NowPlayingLocation = config.GetInt(sectionNowPlaying, nowPlayingLocation, 0, true);
+            NowPlayingColor = config.GetInt(sectionNowPlaying, nowPlayingColor, 0, true);
         }
 
-        static readonly string loop = "Loop";
-        internal static bool Loop
+        internal void Save()
         {
-            get
-            {
-                return config.GetBool(sectionCore, loop, false, true);
-            }
-            set
-            {
-                config.SetBool(sectionCore, loop, value);
-            }
+            config.SetBool(sectionCore, useCustomMenuSongs, UseCustomMenuSongs);
+            config.SetBool(sectionCore, loop, Loop);
+            config.SetFloat(sectionCore, menuMusicVolume, MenuMusicVolume);
+            config.SetBool(sectionNowPlaying, showNowPlaying, ShowNowPlaying);
+            config.SetInt(sectionNowPlaying, nowPlayingLocation, NowPlayingLocation);
+            config.SetInt(sectionNowPlaying, nowPlayingColor, NowPlayingColor);
+            
+            CustomMenuMusic.instance.GetSongsList(UseCustomMenuSongs);
+            NowPlaying.instance?.SetTextColor(NowPlayingColor);
         }
 
-        static readonly string menuMusicVolume = "MenuMusicVolume";
-        internal static float MenuMusicVolume
-        {
-            get
-            {
-                return config.GetFloat(sectionCore, menuMusicVolume, 0.5f, true);
-            }
-            set
-            {
-                config.SetFloat(sectionCore, menuMusicVolume, value);
-            }
-        }
+        [UIValue("use-custom-menu-songs")]
+        public bool UseCustomMenuSongs;
 
-        static readonly string showNowPlaying = "ShowNowPlaying";
-        internal static bool ShowNowPlaying
-        {
-            get
-            {
-                return config.GetBool(sectionNowPlaying, showNowPlaying, true, true);
-            }
-            set
-            {
-                config.SetBool(sectionNowPlaying, showNowPlaying, value);
-                //NowPlaying.instance.enabled = value;
-            }
-        }
+        [UIValue("loop")]
+        public bool Loop;
 
-        static readonly string nowPlayingLocation = "NowPlayingLocation";
-        internal static Location NowPlayingLocation
-        {
-            get
-            {
-                return (Location) config.GetInt(sectionNowPlaying, nowPlayingLocation, 0, true);
-            }
-            set
-            {
-                config.SetInt(sectionNowPlaying, nowPlayingLocation, (int) value);
-            }
-        }
+        [UIValue("volume")]
+        public float MenuMusicVolume;
 
-        static readonly string nowPlayingColor = "NowPlayingColor";
-        internal static int NowPlayingColor
-        {
-            get
-            {
-                return config.GetInt(sectionNowPlaying, nowPlayingColor, 0, true);
-            }
-            set
-            {
-                config.SetInt(sectionNowPlaying, nowPlayingColor, value);
-                NowPlaying.instance.SetTextColor(value);
-            }
-        }
+        [UIValue("show-now-playing")]
+        public bool ShowNowPlaying;
+
+        [UIValue("now-playing-location")]
+        public int NowPlayingLocation;
+
+        [UIValue("now-playing-color")]
+        public int NowPlayingColor;
 
         internal enum Location
         {
