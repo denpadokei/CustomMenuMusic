@@ -6,11 +6,12 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 using Newtonsoft.Json;
-using Logger = CustomMenuMusic.Util.Logger; 
+using Logger = CustomMenuMusic.Util.Logger;
+using static CustomMenuMusic.Config;
 
 namespace CustomMenuMusic
 {
-    class NowPlaying : MonoBehaviour
+    class NowPlaying : PersistentSingleton<NowPlaying>
     {
         internal static NowPlaying instance;
 
@@ -39,23 +40,23 @@ namespace CustomMenuMusic
 
         internal void SetCurrentSong(string newSong)
         {
-            if (new DirectoryInfo(Path.GetDirectoryName(newSong)).Name.Equals("CustomMenuSongs"))
-                songName = Path.GetFileNameWithoutExtension(newSong);
-            else
-            {
-                try
-                {
-                    string songDirectory = Path.GetDirectoryName(newSong);
-                    string infoFileName = (File.Exists(Path.Combine(songDirectory, "info.json"))) ? "info.json" : "info.dat";
-                    dynamic songInfo = JsonConvert.DeserializeObject(File.ReadAllText(Path.Combine(songDirectory, infoFileName)));
-                    songName = songInfo.songName ?? songInfo._songName;
-                }
-                catch (Exception e)
-                {
-                    Logger.Log(e.StackTrace, Logger.LogLevel.Error);
-                    songName = Path.GetFileNameWithoutExtension(newSong);
-                }
-            }
+            //if (new DirectoryInfo(Path.GetDirectoryName(newSong)).Name.Equals("CustomMenuSongs"))
+            //    songName = Path.GetFileNameWithoutExtension(newSong);
+            //else
+            //{
+            //    try
+            //    {
+            //        string songDirectory = Path.GetDirectoryName(newSong);
+            //        string infoFileName = (File.Exists(Path.Combine(songDirectory, "info.json"))) ? "info.json" : "info.dat";
+            //        dynamic songInfo = JsonConvert.DeserializeObject(File.ReadAllText(Path.Combine(songDirectory, infoFileName)));
+            //        songName = songInfo.songName ?? songInfo._songName;
+            //    }
+            //    catch (Exception e)
+            //    {
+            //        Logger.Log(e.StackTrace, Logger.LogLevel.Error);
+            //        songName = Path.GetFileNameWithoutExtension(newSong);
+            //    }
+            //}
 
             if (songName != null || songName != string.Empty)
                 _nowPlayingText.text = $"{LabelText}{songName}";
@@ -92,7 +93,7 @@ namespace CustomMenuMusic
 
         private void Awake()
         {
-            SetLocation(Config.NowPlayingLocation);
+            SetLocation((Location)Config.instance.NowPlayingLocation);
 
             _canvas = gameObject.AddComponent<Canvas>();
             _canvas.renderMode = RenderMode.WorldSpace;
@@ -141,7 +142,7 @@ namespace CustomMenuMusic
 
         internal void SetTextColor()
         {
-            SetTextColor(Config.NowPlayingColor);
+            SetTextColor(Config.instance.NowPlayingColor);
         }
 
         internal void SetTextColor(int colorIndex)

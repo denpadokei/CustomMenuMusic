@@ -41,7 +41,7 @@ namespace CustomMenuMusic
         {
             DontDestroyOnLoad(this.gameObject);
 
-            SceneManager.activeSceneChanged += ActiveSceneChanged;
+            BSEvents.menuSceneActive += BSEvents_menuSceneActive;
 
             if (!Directory.Exists(CustomMenuSongsPath))
                 Directory.CreateDirectory(CustomMenuSongsPath);
@@ -49,39 +49,37 @@ namespace CustomMenuMusic
             GetSongsList();
         }
 
+
         private void Update()
         {
             if (Input.GetKeyDown(KeyCode.N))
                 StartCoroutine(LoadAudioClip());
 
-            //if (Config.Loop || !_previewPlayer || _isLoadingAudioClip) return;
+            if (Config.instance.Loop || !_previewPlayer || _isLoadingAudioClip) return;
 
-            //try
-            //{
-            //    if ((bool) !_previewPlayer.GetField<AudioSource[]>("_audioSources")[_previewPlayer.GetField<int>("_activeChannel")]?.isPlaying)
-            //        StartCoroutine(LoadAudioClip());
-            //}
-            //catch (Exception e)
-            //{
-            //    Logger.Log($"Failed to get AudioSource - {_previewPlayer.GetField<int>("_activeChannel")}", Logger.LogLevel.Warning);
-            //}
+            try
+            {
+                if ((bool) !_previewPlayer.GetField<AudioSource[]>("_audioSources")[_previewPlayer.GetField<int>("_activeChannel")]?.isPlaying)
+                    StartCoroutine(LoadAudioClip());
+            }
+            catch (Exception e)
+            {
+                Logger.Log($"Failed to get AudioSource - {_previewPlayer.GetField<int>("_activeChannel")}", Logger.LogLevel.Warning);
+            }
         }
 
-        private void ActiveSceneChanged(Scene arg0, Scene arg1)
+        private void BSEvents_menuSceneActive()
         {
-            if (arg1.name == "MenuCore")
-            {
-                if (Config.ShowNowPlaying)
-                    NowPlaying.OnLoad();
-                _sceneDidTransition = true;
+            if (Config.instance.ShowNowPlaying)
+                NowPlaying.OnLoad();
+            _sceneDidTransition = true;
 
-                StartCoroutine(LoadAudioClip());
-            }
+            StartCoroutine(LoadAudioClip());
         }
 
         internal void GetSongsList()
         {
-            GetSongsList(Config.UseCustomMenuSongs);
+            GetSongsList(Config.instance.UseCustomMenuSongs);
         }
 
         internal void GetSongsList(bool useCustomMenuSongs)
@@ -191,24 +189,15 @@ namespace CustomMenuMusic
                 try
                 {
                     _previewPlayer.SetField("_defaultAudioClip", _menuMusic);
-                    _previewPlayer.SetField("_ambientVolumeScale", Config.MenuMusicVolume);
+                    _previewPlayer.SetField("_ambientVolumeScale", Config.instance.MenuMusicVolume);
                     _previewPlayer.CrossfadeToDefault();
 
-                    //_currentAudioSourceIndex = _previewPlayer.GetField<int>("_activeChannel");
-                    //_currentAudioSource = _previewPlayer.GetField<AudioSource[]>("_audioSources")[_currentAudioSourceIndex];
-                    //_currentAudioSource.loop = Config.Loop;
+                    _currentAudioSourceIndex = _previewPlayer.GetField<int>("_activeChannel");
+                    _currentAudioSource = _previewPlayer.GetField<AudioSource[]>("_audioSources")[_currentAudioSourceIndex];
+                    _currentAudioSource.loop = Config.instance.Loop;
 
-                    try
-                    {
-                        if (Config.ShowNowPlaying && (bool) NowPlaying.instance)
-                            NowPlaying.instance?.SetCurrentSong(musicPath);
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.Log("Failed to set Now Playing", Logger.LogLevel.Error);
-                        Destroy(NowPlaying.instance);
-                    }
-
+                    if (Config.instance.ShowNowPlaying && (bool)NowPlaying.instance)
+                        NowPlaying.instance?.SetCurrentSong(musicPath);
                 }
                 catch (Exception e)
                 {

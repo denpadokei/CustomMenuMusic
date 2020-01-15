@@ -1,0 +1,21 @@
+﻿<settings-container>
+
+  <settings-submenu text="Core Settings" hover-hint="Adjust Core Custom Menu Music Settings Here">
+    <settings-container>
+      <clickable-text text="Back" click-event="back"></clickable-text>
+      <bool-setting value="use-custom-menu-songs" text="Use Custom Menu Songs"></bool-setting>
+      <bool-setting value="loop" text="Loop"></bool-setting>
+      <list-setting value="volume" text="Volume" options="volume-range"></list-setting>
+    </settings-container>
+  </settings-submenu>
+
+  <settings-submenu text="Now Playing" hover-hint="Tweak Now Playing Options Here">
+    <settings-container>
+      <clickable-text text="Back" click-event="back"></clickable-text>
+      <bool-setting value="show-now-playing" text="Show Now Playing"></bool-setting>
+      <list-setting value="now-playing-location" text="Location" options="now-playing-location-range" formatter="format-now-playing-location"></list-setting>
+      <list-setting value="now-playing-color" text="Text Color" options="preset-colors" formatter="format-text-color"></list-setting>
+    </settings-container>
+  </settings-submenu>
+
+</settings-container>
