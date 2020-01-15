@@ -57,7 +57,8 @@ namespace CustomMenuMusic
                 }
             }
 
-            _nowPlayingText.text = $"{LabelText}{songName}";
+            if (songName != null || songName != string.Empty)
+                _nowPlayingText.text = $"{LabelText}{songName}";
         }
 
         internal void SetLocation(Config.Location location)

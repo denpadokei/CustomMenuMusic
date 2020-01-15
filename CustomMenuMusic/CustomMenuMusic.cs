@@ -54,17 +54,17 @@ namespace CustomMenuMusic
             if (Input.GetKeyDown(KeyCode.N))
                 StartCoroutine(LoadAudioClip());
 
-            if (Config.Loop || !_previewPlayer || _isLoadingAudioClip) return;
+            //if (Config.Loop || !_previewPlayer || _isLoadingAudioClip) return;
 
-            try
-            {
-                if ((bool) !_previewPlayer.GetField<AudioSource[]>("_audioSources")[_previewPlayer.GetField<int>("_activeChannel")]?.isPlaying)
-                    StartCoroutine(LoadAudioClip());
-            }
-            catch (Exception e)
-            {
-                Logger.Log($"Failed to get AudioSource - {_previewPlayer.GetField<int>("_activeChannel")}", Logger.LogLevel.Warning);
-            }
+            //try
+            //{
+            //    if ((bool) !_previewPlayer.GetField<AudioSource[]>("_audioSources")[_previewPlayer.GetField<int>("_activeChannel")]?.isPlaying)
+            //        StartCoroutine(LoadAudioClip());
+            //}
+            //catch (Exception e)
+            //{
+            //    Logger.Log($"Failed to get AudioSource - {_previewPlayer.GetField<int>("_activeChannel")}", Logger.LogLevel.Warning);
+            //}
         }
 
         private void ActiveSceneChanged(Scene arg0, Scene arg1)
@@ -194,12 +194,21 @@ namespace CustomMenuMusic
                     _previewPlayer.SetField("_ambientVolumeScale", Config.MenuMusicVolume);
                     _previewPlayer.CrossfadeToDefault();
 
-                    _currentAudioSourceIndex = _previewPlayer.GetField<int>("_activeChannel");
-                    _currentAudioSource = _previewPlayer.GetField<AudioSource[]>("_audioSources")[_currentAudioSourceIndex];
-                    _currentAudioSource.loop = Config.Loop;
+                    //_currentAudioSourceIndex = _previewPlayer.GetField<int>("_activeChannel");
+                    //_currentAudioSource = _previewPlayer.GetField<AudioSource[]>("_audioSources")[_currentAudioSourceIndex];
+                    //_currentAudioSource.loop = Config.Loop;
 
-                    if (Config.ShowNowPlaying && (bool) NowPlaying.instance)
-                        NowPlaying.instance?.SetCurrentSong(musicPath);
+                    try
+                    {
+                        if (Config.ShowNowPlaying && (bool) NowPlaying.instance)
+                            NowPlaying.instance?.SetCurrentSong(musicPath);
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Log("Failed to set Now Playing", Logger.LogLevel.Error);
+                        Destroy(NowPlaying.instance);
+                    }
+
                 }
                 catch (Exception e)
                 {
