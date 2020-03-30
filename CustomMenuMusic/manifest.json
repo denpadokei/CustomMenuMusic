@@ -8,14 +8,14 @@
     "",
     "A plugin to let you use custom music in your menu."
   ],
-  "gameVersion": "1.6.0",
+  "gameVersion": "1.8.0",
   "id": "Custom Menu Music",
   "icon": "CustomMenuMusic.Resources.KlouJam.png",
   "name": "Custom Menu Music",
-  "version": "1.5.3",
+  "version": "1.6.0",
   "features": [],
   "dependsOn": {
-    "BS Utils": "^1.4.0",
-    "BeatSaberMarkupLanguage": "^1.1.1"
+    "BS Utils": "^1.4.3",
+    "BeatSaberMarkupLanguage": "^1.1.5"
   }
 }

@@ -1,17 +1,17 @@
-﻿using System;
-using System.Collections;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using TMPro;
 using UnityEngine;
-using Newtonsoft.Json;
-using Logger = CustomMenuMusic.Util.Logger;
+using UnityEngine.SceneManagement;
 using static CustomMenuMusic.Config;
+using Logger = CustomMenuMusic.Util.Logger;
 
 namespace CustomMenuMusic
 {
-    class NowPlaying : PersistentSingleton<NowPlaying>
+    class NowPlaying : MonoBehaviour
     {
         internal static NowPlaying instance;
 
@@ -35,31 +35,47 @@ namespace CustomMenuMusic
             if (instance) return;
 
             instance = new GameObject("NowPlaying").AddComponent<NowPlaying>();
+            DontDestroyOnLoad(instance);
+            SceneManager.activeSceneChanged += instance.OnActiveSceneChanged;
             Logger.Log("Created NowPlaying object.");
         }
 
-        internal void SetCurrentSong(string newSong)
+        internal void SetCurrentSong(string newSong, bool isPath = true)
         {
-            //if (new DirectoryInfo(Path.GetDirectoryName(newSong)).Name.Equals("CustomMenuSongs"))
-            //    songName = Path.GetFileNameWithoutExtension(newSong);
-            //else
-            //{
-            //    try
-            //    {
-            //        string songDirectory = Path.GetDirectoryName(newSong);
-            //        string infoFileName = (File.Exists(Path.Combine(songDirectory, "info.json"))) ? "info.json" : "info.dat";
-            //        dynamic songInfo = JsonConvert.DeserializeObject(File.ReadAllText(Path.Combine(songDirectory, infoFileName)));
-            //        songName = songInfo.songName ?? songInfo._songName;
-            //    }
-            //    catch (Exception e)
-            //    {
-            //        Logger.Log(e.StackTrace, Logger.LogLevel.Error);
-            //        songName = Path.GetFileNameWithoutExtension(newSong);
-            //    }
-            //}
+            if (newSong == null || newSong == string.Empty)
+            {
+                _nowPlayingText.text = String.Empty;
+                Logger.Log("newSong was invalid");
+                return;
+            }
+
+            if (isPath)
+            {
+                if (new DirectoryInfo(Path.GetDirectoryName(newSong)).Name.Equals("CustomMenuSongs"))
+                    songName = Path.GetFileNameWithoutExtension(newSong);
+                else
+                {
+                    try
+                    {
+                        var songDirectory = Path.GetDirectoryName(newSong);
+                        var infoFileName = (File.Exists(Path.Combine(songDirectory, "info.json"))) ? "info.json" : "info.dat";
+                        dynamic songInfo = JsonConvert.DeserializeObject(File.ReadAllText(Path.Combine(songDirectory, infoFileName)));
+                        songName = songInfo.songName ?? songInfo._songName;
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Log(e.StackTrace, Logger.LogLevel.Error);
+                        songName = Path.GetFileNameWithoutExtension(newSong);
+                    }
+                }
+            }
+            else
+                songName = newSong;
 
             if (songName != null || songName != string.Empty)
                 _nowPlayingText.text = $"{LabelText}{songName}";
+            else
+                _nowPlayingText.text = String.Empty;
         }
 
         internal void SetLocation(Config.Location location)
@@ -67,7 +83,7 @@ namespace CustomMenuMusic
             Vector3 position;
             Vector3 rotation;
 
-            switch(location)
+            switch (location)
             {
                 case Config.Location.LeftPanel:
                     position = LeftPosition;
@@ -113,17 +129,14 @@ namespace CustomMenuMusic
             _canvas.enabled = true;
         }
 
-        private TextMeshProUGUI CreateText(RectTransform parent, string text, Vector2 anchoredPosition)
-        {
-            return CreateText(parent, text, anchoredPosition, new Vector2(0, 0));
-        }
+        private TextMeshProUGUI CreateText(RectTransform parent, string text, Vector2 anchoredPosition) => CreateText(parent, text, anchoredPosition, new Vector2(0, 0));
 
         private TextMeshProUGUI CreateText(RectTransform parent, string text, Vector2 anchoredPosition, Vector2 sizeDelta)
         {
-            GameObject gameObj = new GameObject("CustomUIText");
+            var gameObj = new GameObject("CustomUIText");
             gameObj.SetActive(false);
 
-            TextMeshProUGUI textMesh = gameObj.AddComponent<TextMeshProUGUI>();
+            var textMesh = gameObj.AddComponent<TextMeshProUGUI>();
             textMesh.font = Instantiate(Resources.FindObjectsOfTypeAll<TMP_FontAsset>().First(t => t.name == "Teko-Medium SDF No Glow"));
             textMesh.rectTransform.SetParent(parent, false);
             textMesh.text = text;
@@ -140,15 +153,9 @@ namespace CustomMenuMusic
             return textMesh;
         }
 
-        internal void SetTextColor()
-        {
-            SetTextColor(Config.instance.NowPlayingColor);
-        }
+        internal void SetTextColor() => SetTextColor(Config.instance.NowPlayingColor);
 
-        internal void SetTextColor(int colorIndex)
-        {
-            _nowPlayingText.color = colors[colorIndex].Item1;
-        }
+        internal void SetTextColor(int colorIndex) => _nowPlayingText.color = colors[colorIndex].Item1;
 
         internal static List<Tuple<Color, string>> colors = new List<Tuple<Color, string>>()
         {
@@ -173,6 +180,12 @@ namespace CustomMenuMusic
             { MyColors.HintOfGreen, "Hint of Green" },
             { MyColors.BestGirl, "Best Girl" }
         };
+
+        private void OnActiveSceneChanged(Scene prevScene, Scene nextScene)
+        {
+            if (nextScene.name != "MenuCore")
+                _nowPlayingText.text = string.Empty;
+        }
     }
 
     struct MyColors

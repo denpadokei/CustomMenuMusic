@@ -3,23 +3,20 @@ using UnityEngine.SceneManagement;
 
 namespace CustomMenuMusic
 {
-    public class Plugin : IBeatSaberPlugin
+    [Plugin(RuntimeOptions.SingleStartInit)]
+    public class Plugin
     {
         public string Name => "Custom Menu Music";
         public string ID => "CustomMenuMusic";
         public string Version => "1.5.3";
 
+        [Init]
         public void Init(IPA.Logging.Logger log)
         {
             Util.Logger.logger = log;
 
-            SceneManager.activeSceneChanged += OnActiveSceneChanged;
             SceneManager.sceneLoaded += OnSceneLoaded;
         }
-
-        public void OnApplicationStart() { }
-
-        public void OnActiveSceneChanged(Scene prevScene, Scene nextScene) { }
 
         public void OnSceneLoaded(Scene scene, LoadSceneMode sceneMode)
         {
@@ -28,15 +25,8 @@ namespace CustomMenuMusic
             CustomMenuMusic.OnLoad();
         }
 
-        public void OnApplicationQuit()
-        {
-            SceneManager.activeSceneChanged -= OnActiveSceneChanged;
-            SceneManager.sceneLoaded -= OnSceneLoaded;
-        }
-
-        public void OnUpdate() { }
-
-        public void OnFixedUpdate() { }
+        [OnExit]
+        public void OnApplicationQuit() => SceneManager.sceneLoaded -= OnSceneLoaded;
 
         public void OnSceneUnloaded(Scene scene)
         {
