@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
@@ -12,9 +14,9 @@ using Logger = CustomMenuMusic.Util.Logger;
 
 namespace CustomMenuMusic
 {
-    class CustomMenuMusic : MonoBehaviour
+    class CustomMenuMusicController : MonoBehaviour
     {
-        internal static CustomMenuMusic instance;
+        internal static CustomMenuMusicController instance;
 
         private AudioClip _menuMusic;
         private SongPreviewPlayer _previewPlayer;
@@ -25,34 +27,37 @@ namespace CustomMenuMusic
         private bool _isLoadingAudioClip = false;
         private bool _overrideCustomSongsList = false;
 
-        private string musicPath;
+        public String CurrentSongPath { get; private set; }
         private const string builtInSongsFolder = "CustomMenuMusic.BuiltInSongs";
 
         private readonly string CustomSongsPath = "Beat Saber_Data\\CustomLevels";
         private readonly string CustomMenuSongsPath = "CustomMenuSongs";
 
-        private string[] AllSongFilePaths = new string[0];
+        private string[] AllSongFilePaths = Array.Empty<string>();
 
         internal static void OnLoad()
         {
             if (instance == null)
-                instance = new GameObject("CustomMenuMusic").AddComponent<CustomMenuMusic>();
+                instance = new GameObject("CustomMenuMusic").AddComponent<CustomMenuMusicController>();
         }
 
         private void Awake()
         {
             DontDestroyOnLoad(this.gameObject);
 
-            BSEvents.menuSceneActive += BSEvents_menuSceneActive;
-
             if (!Directory.Exists(CustomMenuSongsPath))
                 Directory.CreateDirectory(CustomMenuSongsPath);
 
-            GetSongsList();
+            BSEvents.menuSceneActive += BSEvents_menuSceneActive;
 
-            Logger.Log($"{LayerMasks.noteDebrisLayer}");
+            GetSongsList();
         }
 
+        private void OnDestroy()
+        {
+            BSEvents.menuSceneActive -= BSEvents_menuSceneActive;
+            instance = null;
+        }
 
         private void Update()
         {
@@ -65,13 +70,10 @@ namespace CustomMenuMusic
 
             try
             {
-                if ((bool)!_previewPlayer.GetField<AudioSource[]>("_audioSources")[_previewPlayer.GetField<int>("_activeChannel")]?.isPlaying)
+                if ((bool)!_previewPlayer?.GetField<AudioSource[]>("_audioSources")?[_previewPlayer.GetField<int>("_activeChannel")]?.isPlaying)
                     StartCoroutine(LoadAudioClip(true));
             }
-            catch (Exception e)
-            {
-                //Logger.Log($"Failed to get AudioSource - {_previewPlayer.GetField<int>("_activeChannel")}", Logger.LogLevel.Warning);
-            }
+            catch { }
         }
 
         private void BSEvents_menuSceneActive()
@@ -83,61 +85,65 @@ namespace CustomMenuMusic
             StartCoroutine(LoadAudioClip());
         }
 
-        internal void GetSongsList() => GetSongsList(Config.instance.UseCustomMenuSongs);
+        internal async void GetSongsList() => await GetSongsListAsync(Config.instance.UseCustomMenuSongs);
 
-        internal void GetSongsList(bool useCustomMenuSongs)
+        internal async Task GetSongsListAsync(bool useCustomMenuSongs)
         {
-            if (useCustomMenuSongs)
-                AllSongFilePaths = GetAllCustomMenuSongs();
-            else
-                AllSongFilePaths = GetAllCustomSongs();
+            await new WaitForBackgroundThread();
 
-            if (AllSongFilePaths.Count() == 0 || (DateTime.UtcNow.Month == 4 && DateTime.UtcNow.Day == 1))
-                _overrideCustomSongsList = true;
+            AllSongFilePaths = Array.Empty<string>();
+
+            if (useCustomMenuSongs)
+                AllSongFilePaths = await GetAllCustomMenuSongsAsync();
+            else
+                AllSongFilePaths = await GetAllCustomSongsAsync();
+
+            _overrideCustomSongsList = (AllSongFilePaths.Count() == 0);
         }
 
-        private string[] GetAllCustomMenuSongs()
+        private async Task<string[]> GetAllCustomMenuSongsAsync()
         {
             if (!Directory.Exists(CustomMenuSongsPath))
                 Directory.CreateDirectory(CustomMenuSongsPath);
 
-            var FilePaths = Directory.GetFiles(CustomMenuSongsPath, "*.*").Where(file => file.ToLower().EndsWith("ogg")).ToArray();
+            var startTime = DateTime.UtcNow;
+            var FilePaths = await Task.Run(() => Directory.GetFiles(CustomMenuSongsPath, "*.*").Where(file => file.ToLower().EndsWith("ogg")).ToArray());
 
-            Logger.Log($"Found {AllSongFilePaths.Length} Custom Menu Songs.", (AllSongFilePaths.Length > 0) ? Logger.LogLevel.Notice : Logger.LogLevel.Warning);
-
-            if (FilePaths.Length == 0)
-            {
-                FilePaths = GetAllCustomSongs();
-            }
+            Logger.Log($"Found {AllSongFilePaths.Length} Custom Menu Songs in {(DateTime.UtcNow - startTime).TotalSeconds} seconds.",
+                (AllSongFilePaths.Length > 0) ? Logger.LogLevel.Debug : Logger.LogLevel.Warning);
 
             return FilePaths;
         }
 
-        private string[] GetAllCustomSongs()
+        private async Task<string[]> GetAllCustomSongsAsync()
         {
-            var FilePaths = DirSearch(CustomSongsPath).ToArray();
+            var startTime = DateTime.UtcNow;
+            var FilePaths = (await DirSearchAsync(CustomSongsPath)).ToArray();
 
-            Logger.Log($"Found {FilePaths.Length} Custom Songs.", Logger.LogLevel.Notice);
+            Logger.Log($"Found {FilePaths.Length} Custom Songs in {(DateTime.UtcNow - startTime).TotalSeconds} seconds.", Logger.LogLevel.Debug);
 
             return FilePaths;
         }
 
-        private List<String> DirSearch(string sDir)
+        private async Task<List<String>> DirSearchAsync(string sDir)
         {
             var files = new List<String>();
             try
             {
-                foreach (var d in Directory.GetDirectories(sDir))
+                await Task.Run(() =>
                 {
-                    files.AddRange(Directory.GetFiles(d, "*.egg"));
+                    foreach (var d in Directory.GetDirectories(sDir))
+                    {
+                        files.AddRange(Directory.GetFiles(d, "*.egg"));
 
-                    foreach (var f in Directory.GetDirectories(d))
-                        files.AddRange(Directory.GetFiles(f, "*.egg"));
-                }
+                        foreach (var f in Directory.GetDirectories(d))
+                            files.AddRange(Directory.GetFiles(f, "*.egg"));
+                    }
+                });
             }
             catch (Exception e)
             {
-                Logger.Log(e.StackTrace, Logger.LogLevel.Error);
+                Logger.Log($"{ e.Message} - {e.StackTrace}", Logger.LogLevel.Error);
             }
             return files;
         }
@@ -149,12 +155,14 @@ namespace CustomMenuMusic
             return AllSongFilePaths[index];
         }
 
-
         IEnumerator LoadAudioClip(bool startAtBeginning = false, int attempts = 0)
         {
-            if (attempts > 2) yield break;
+            if (attempts > 2 || _isLoadingAudioClip) yield break;
 
             _isLoadingAudioClip = true;
+
+            yield return new WaitUntil(() => AllSongFilePaths.Length > 0 || _overrideCustomSongsList);
+
             yield return new WaitUntil(() => _previewPlayer = Resources.FindObjectsOfTypeAll<SongPreviewPlayer>().First());
             if (_sceneDidTransition)
             {
@@ -184,9 +192,9 @@ namespace CustomMenuMusic
             }
             else
             {
-                musicPath = GetNewSong();
-                Logger.Log("Loading file @ " + musicPath);
-                var songe = UnityWebRequestMultimedia.GetAudioClip($"{Environment.CurrentDirectory}\\{musicPath}", AudioType.OGGVORBIS);
+                CurrentSongPath = GetNewSong();
+                Logger.Log("Loading file @ " + CurrentSongPath);
+                var songe = UnityWebRequestMultimedia.GetAudioClip($"{Environment.CurrentDirectory}\\{CurrentSongPath}", AudioType.OGGVORBIS);
                 yield return songe.SendWebRequest();
 
                 if (songe.error != null)
@@ -198,7 +206,7 @@ namespace CustomMenuMusic
                         _menuMusic = DownloadHandlerAudioClip.GetContent(songe);
 
                         if (_menuMusic != null)
-                            _menuMusic.name = Path.GetFileName(musicPath);
+                            _menuMusic.name = Path.GetFileName(CurrentSongPath);
                         else
                             Logger.Log("No audio found!", Logger.LogLevel.Warning);
                     }
@@ -231,7 +239,7 @@ namespace CustomMenuMusic
                     if (_overrideCustomSongsList)
                         NowPlaying.instance?.SetCurrentSong(System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(_menuMusic.name), false);
                     else if (Config.instance.ShowNowPlaying && (bool)NowPlaying.instance)
-                        NowPlaying.instance?.SetCurrentSong(musicPath);
+                        NowPlaying.instance?.SetCurrentSong(CurrentSongPath);
                 }
                 catch (Exception e)
                 {
@@ -240,7 +248,11 @@ namespace CustomMenuMusic
                 }
             }
             _isLoadingAudioClip = false;
-            musicPath = null;
+        }
+
+        private class WaitForBackgroundThread
+        {
+            public ConfiguredTaskAwaitable.ConfiguredTaskAwaiter GetAwaiter() => Task.Run(() => { }).ConfigureAwait(false).GetAwaiter();
         }
     }
 }

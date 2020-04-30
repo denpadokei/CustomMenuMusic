@@ -1,9 +1,8 @@
 ﻿using BeatSaberMarkupLanguage.Attributes;
 using System;
-using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using UnityEngine;
 
 namespace CustomMenuMusic
 {
@@ -42,16 +41,28 @@ namespace CustomMenuMusic
 
         internal void Save()
         {
+            Util.Logger.Log("Saving config!");
             config.SetBool(sectionCore, useCustomMenuSongs, UseCustomMenuSongs);
             config.SetBool(sectionCore, loop, Loop);
             config.SetFloat(sectionCore, menuMusicVolume, MenuMusicVolume);
             config.SetBool(sectionNowPlaying, showNowPlaying, ShowNowPlaying);
             config.SetInt(sectionNowPlaying, nowPlayingLocation, NowPlayingLocation);
             config.SetInt(sectionNowPlaying, nowPlayingColor, NowPlayingColor);
-            
-            CustomMenuMusic.instance.GetSongsList(UseCustomMenuSongs);
+
+            CustomMenuMusicController.instance.GetSongsList();
+            StartCoroutine(SetVolume());
+            NowPlaying.instance?.SetCurrentSong(ShowNowPlaying ? CustomMenuMusicController.instance?.CurrentSongPath : String.Empty);
             NowPlaying.instance?.SetTextColor(NowPlayingColor);
+            NowPlaying.instance?.SetLocation((Location)NowPlayingLocation);
         }
+
+        IEnumerator SetVolume()
+        {
+            SongPreviewPlayer _previewPlayer = null;
+            yield return new WaitUntil(() => _previewPlayer = Resources.FindObjectsOfTypeAll<SongPreviewPlayer>().FirstOrDefault());
+            _previewPlayer.volume = MenuMusicVolume;
+        }
+
 
         [UIValue("use-custom-menu-songs")]
         public bool UseCustomMenuSongs;

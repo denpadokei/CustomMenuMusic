@@ -8,7 +8,7 @@ namespace CustomMenuMusic
     {
         public string Name => "Custom Menu Music";
         public string ID => "CustomMenuMusic";
-        public string Version => "1.5.3";
+        public string Version => "1.7.0";
 
         [Init]
         public void Init(IPA.Logging.Logger log)
@@ -18,11 +18,13 @@ namespace CustomMenuMusic
             SceneManager.sceneLoaded += OnSceneLoaded;
         }
 
+        [OnStart]
+        public void OnStart() => CustomMenuMusicController.OnLoad();
+
         public void OnSceneLoaded(Scene scene, LoadSceneMode sceneMode)
         {
             if (scene.name == "MenuCore")
                 Config.instance.CreateSettingsUI();
-            CustomMenuMusic.OnLoad();
         }
 
         [OnExit]

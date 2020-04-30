@@ -45,7 +45,7 @@ namespace CustomMenuMusic
             if (newSong == null || newSong == string.Empty)
             {
                 _nowPlayingText.text = String.Empty;
-                Logger.Log("newSong was invalid");
+                if (Config.instance.ShowNowPlaying) Logger.Log("newSong was invalid", Logger.LogLevel.Warning);
                 return;
             }
 
@@ -117,16 +117,22 @@ namespace CustomMenuMusic
             var rectTransform = _canvas.transform as RectTransform;
             rectTransform.sizeDelta = CanvasSize;
 
-            _nowPlayingText = CreateText(_canvas.transform as RectTransform, LabelText, new Vector2(10, 31));
+            _nowPlayingText = CreateText(_canvas.transform as RectTransform, String.Empty, new Vector2(10, 31));
             rectTransform = _nowPlayingText.transform as RectTransform;
             rectTransform.SetParent(_canvas.transform, false);
             rectTransform.anchoredPosition = new Vector2(10, 31);
             rectTransform.sizeDelta = new Vector2(100, 20);
-            _nowPlayingText.text = LabelText;
+            _nowPlayingText.text = String.Empty;
             _nowPlayingText.fontSize = 14;
             SetTextColor();
 
             _canvas.enabled = true;
+        }
+
+        private void OnDestroy()
+        {
+            SceneManager.activeSceneChanged -= instance.OnActiveSceneChanged;
+            instance = null;
         }
 
         private TextMeshProUGUI CreateText(RectTransform parent, string text, Vector2 anchoredPosition) => CreateText(parent, text, anchoredPosition, new Vector2(0, 0));
@@ -157,7 +163,7 @@ namespace CustomMenuMusic
 
         internal void SetTextColor(int colorIndex) => _nowPlayingText.color = colors[colorIndex].Item1;
 
-        internal static List<Tuple<Color, string>> colors = new List<Tuple<Color, string>>()
+        internal static readonly List<Tuple<Color, string>> colors = new List<Tuple<Color, string>>()
         {
             { Color.white, "White" },
             { Color.red, "Red" },
