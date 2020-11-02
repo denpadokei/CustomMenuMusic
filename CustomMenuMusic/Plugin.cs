@@ -1,4 +1,5 @@
 ﻿using IPA;
+using System.Reflection;
 using UnityEngine.SceneManagement;
 
 namespace CustomMenuMusic
@@ -8,7 +9,7 @@ namespace CustomMenuMusic
     {
         public string Name => "Custom Menu Music";
         public string ID => "CustomMenuMusic";
-        public string Version => "1.7.0";
+        public string Version => Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
         [Init]
         public void Init(IPA.Logging.Logger log)
@@ -19,7 +20,7 @@ namespace CustomMenuMusic
         }
 
         [OnStart]
-        public void OnStart() => CustomMenuMusicController.OnLoad();
+        public void OnStart() => CustomMenuMusic.OnLoad();
 
         public void OnSceneLoaded(Scene scene, LoadSceneMode sceneMode)
         {

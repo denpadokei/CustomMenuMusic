@@ -49,9 +49,9 @@ namespace CustomMenuMusic
             config.SetInt(sectionNowPlaying, nowPlayingLocation, NowPlayingLocation);
             config.SetInt(sectionNowPlaying, nowPlayingColor, NowPlayingColor);
 
-            CustomMenuMusicController.instance.GetSongsList();
+            CustomMenuMusic.instance.GetSongsList();
             StartCoroutine(SetVolume());
-            NowPlaying.instance?.SetCurrentSong(ShowNowPlaying ? CustomMenuMusicController.instance?.CurrentSongPath : String.Empty);
+            NowPlaying.instance?.SetCurrentSong(ShowNowPlaying ? CustomMenuMusic.instance?.CurrentSongPath : String.Empty);
             NowPlaying.instance?.SetTextColor(NowPlayingColor);
             NowPlaying.instance?.SetLocation((Location)NowPlayingLocation);
         }
