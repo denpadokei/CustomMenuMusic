@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using HMUI;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -16,7 +17,8 @@ namespace CustomMenuMusic
         internal static NowPlaying instance;
 
         private Canvas _canvas;
-        private TMP_Text _nowPlayingText;
+        private CurvedCanvasSettings _curvedCanvasSettings;
+        private CurvedTextMeshPro _nowPlayingText;
         private string songName;
 
         private static readonly Vector3 LeftPosition = new Vector3(-2.55f, 2.2f, 1);
@@ -112,6 +114,7 @@ namespace CustomMenuMusic
             SetLocation((Location)Config.instance.NowPlayingLocation);
 
             _canvas = gameObject.AddComponent<Canvas>();
+            _curvedCanvasSettings = gameObject.AddComponent<CurvedCanvasSettings>();
             _canvas.renderMode = RenderMode.WorldSpace;
             _canvas.enabled = false;
             var rectTransform = _canvas.transform as RectTransform;
@@ -135,14 +138,14 @@ namespace CustomMenuMusic
             instance = null;
         }
 
-        private TextMeshProUGUI CreateText(RectTransform parent, string text, Vector2 anchoredPosition) => CreateText(parent, text, anchoredPosition, new Vector2(0, 0));
+        private CurvedTextMeshPro CreateText(RectTransform parent, string text, Vector2 anchoredPosition) => CreateText(parent, text, anchoredPosition, new Vector2(0, 0));
 
-        private TextMeshProUGUI CreateText(RectTransform parent, string text, Vector2 anchoredPosition, Vector2 sizeDelta)
+        private CurvedTextMeshPro CreateText(RectTransform parent, string text, Vector2 anchoredPosition, Vector2 sizeDelta)
         {
             var gameObj = new GameObject("CustomUIText");
             gameObj.SetActive(false);
 
-            var textMesh = gameObj.AddComponent<TextMeshProUGUI>();
+            var textMesh = gameObj.AddComponent<CurvedTextMeshPro>();
             textMesh.font = Instantiate(Resources.FindObjectsOfTypeAll<TMP_FontAsset>().First(t => t.name == "Teko-Medium SDF No Glow"));
             textMesh.rectTransform.SetParent(parent, false);
             textMesh.text = text;

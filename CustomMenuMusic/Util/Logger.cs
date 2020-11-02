@@ -1,21 +1,18 @@
-﻿namespace CustomMenuMusic.Util
+﻿using System.IO;
+using System.Runtime.CompilerServices;
+
+namespace CustomMenuMusic.Util
 {
     static class Logger
     {
         public static IPA.Logging.Logger logger;
         public enum LogLevel { Debug, Warning, Notice, Error, Critical };
 
-        public static void Log(string m)
+        public static void Log(string m, [CallerFilePath]string filePath = null, [CallerLineNumber]int? line = null, [CallerMemberName]string member = null)
         {
-            Log(m, LogLevel.Debug);
+            Log(m, LogLevel.Debug, null, filePath, line, member);
         }
-
-        public static void Log(string m, LogLevel l)
-        {
-            Log(m, l, null);
-        }
-
-        public static void Log(string m, LogLevel l, string suggestedAction)
+        public static void Log(string m, LogLevel l, string suggestedAction = null, [CallerFilePath]string filePath = null, [CallerLineNumber]int? line = null, [CallerMemberName]string member = null)
         {
             IPA.Logging.Logger.Level level = IPA.Logging.Logger.Level.Debug;
             switch (l)
@@ -26,9 +23,9 @@
                 case LogLevel.Error: level = IPA.Logging.Logger.Level.Error; break;
                 case LogLevel.Critical: level = IPA.Logging.Logger.Level.Critical; break;
             }
-            logger.Log(level, m);
-            if (suggestedAction != null)
-                logger.Log(level, $"Suggested Action: {suggestedAction}");
+            logger.Log(level, $"{Path.GetFileName(filePath)}({line})[{member}] : {m}");
+            if (!string.IsNullOrEmpty(suggestedAction))
+                logger.Log(level, $"{Path.GetFileName(filePath)}({line})[{member}] Suggested Action: {suggestedAction}");
         }
     }
 }
