@@ -1,0 +1,6 @@
+﻿<bg xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'>
+  <vertical pad='10' vertical-fit='PreferredSize'>
+    <text text='~song-name'></text>
+    <button text='PLAY NOW PLAY' on-click='play-now-play'></button>
+  </vertical>
+</bg>

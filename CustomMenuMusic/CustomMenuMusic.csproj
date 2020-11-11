@@ -42,6 +42,8 @@
     <Compile Include="Settings.cs" />
     <Compile Include="Util\Logger.cs" />
     <Compile Include="Util\ResourceUtil.cs" />
+    <Compile Include="Util\SongListUtility.cs" />
+    <Compile Include="Views\TabViewController.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="BSML, Version=1.1.1.0, Culture=neutral, processorArchitecture=MSIL">
@@ -82,6 +84,16 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(BeatSaberDir)\Libs\Newtonsoft.Json.dll</HintPath>
       <Private>False</Private>
+    </Reference>
+    <Reference Include="SongBrowser, Version=6.1.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <Private>False</Private>
+      <HintPath>$(BeatSaberDir)\Plugins\SongBrowser.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="SongCore, Version=3.0.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <Private>False</Private>
+      <HintPath>$(BeatSaberDir)\Plugins\SongCore.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="System" />
     <Reference Include="Unity.TextMeshPro">
@@ -136,6 +148,9 @@
     <EmbeddedResource Include="manifest.json" />
     <EmbeddedResource Include="Resources\ABOUT.md" />
     <EmbeddedResource Include="Resources\Settings.bsml" />
+    <EmbeddedResource Include="Views\TabViewController.bsml">
+      <DependentUpon>TabViewController.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\KlouJam.png" />

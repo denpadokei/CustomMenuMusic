@@ -1,5 +1,7 @@
 ﻿using BeatSaberMarkupLanguage.Attributes;
+using BeatSaberMarkupLanguage.GameplaySetup;
 using BeatSaberMarkupLanguage.Settings;
+using CustomMenuMusic.Views;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,6 +42,7 @@ namespace CustomMenuMusic
             Util.Logger.Log("Creating Settings UI", Util.Logger.LogLevel.Debug);
 
             BSMLSettings.instance.AddSettingsMenu("Custom Menu Music", "CustomMenuMusic.Resources.Settings.bsml", PersistentSingleton<Config>.instance);
+            GameplaySetup.instance.AddTab("Custom Menu Music", TabViewController.instance.ResourceName, TabViewController.instance);
         }
 
         static readonly List<String> locationNames = new List<string> { "Left Panel", "Center Panel", "Right Panel" };
