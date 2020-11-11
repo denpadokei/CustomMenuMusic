@@ -1,4 +1,6 @@
 ﻿using BS_Utils.Utilities;
+using CustomMenuMusic.Util;
+using CustomMenuMusic.Views;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -40,6 +42,12 @@ namespace CustomMenuMusic
         {
             if (instance == null)
                 instance = new GameObject("CustomMenuMusic").AddComponent<CustomMenuMusic>();
+            BSEvents.lateMenuSceneLoadedFresh += BSEvents_lateMenuSceneLoadedFresh;
+        }
+
+        private static void BSEvents_lateMenuSceneLoadedFresh(ScenesTransitionSetupDataSO obj)
+        {
+            SongListUtility.Setup();
         }
 
         private void Awake()
@@ -57,6 +65,7 @@ namespace CustomMenuMusic
         private void OnDestroy()
         {
             BSEvents.menuSceneActive -= BSEvents_menuSceneActive;
+            BSEvents.lateMenuSceneLoadedFresh -= BSEvents_lateMenuSceneLoadedFresh;
             instance = null;
         }
 
@@ -193,6 +202,9 @@ namespace CustomMenuMusic
             {
                 try {
                     CurrentSongPath = GetNewSong();
+                    if (!Config.instance.UseCustomMenuSongs) {
+                        TabViewController.instance.CurrentSongPath = this.CurrentSongPath;
+                    }
                     Logger.Log("Loading file @ " + CurrentSongPath);
                 }
                 catch (Exception e) {

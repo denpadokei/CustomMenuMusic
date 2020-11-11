@@ -1,4 +1,5 @@
-﻿using HMUI;
+﻿using CustomMenuMusic.Views;
+using HMUI;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -63,6 +64,7 @@ namespace CustomMenuMusic
                         var infoFileName = (File.Exists(Path.Combine(songDirectory, "info.json"))) ? "info.json" : "info.dat";
                         dynamic songInfo = JsonConvert.DeserializeObject(File.ReadAllText(Path.Combine(songDirectory, infoFileName)));
                         songName = songInfo.songName ?? songInfo._songName;
+                        TabViewController.instance.SongName = this.songName;
                     }
                     catch (Exception e)
                     {
