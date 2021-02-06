@@ -7,33 +7,33 @@ using System.Linq;
 using BeatSaberMarkupLanguage;
 using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.Components;
+using BeatSaberMarkupLanguage.GameplaySetup;
 using BeatSaberMarkupLanguage.ViewControllers;
 using BS_Utils.Utilities;
+using CustomMenuMusic.Configuration;
 using CustomMenuMusic.Util;
 using SongCore;
+using Zenject;
 
 namespace CustomMenuMusic.Views
 {
     [HotReload]
-    public class TabViewController : PersistentSingleton<TabViewController>, INotifyPropertyChanged
+    public class CMMTabViewController : BSMLAutomaticViewController, IInitializable
     {
         // For this method of setting the ResourceName, this class must be the first class in the file.
         public string ResourceName => string.Join(".", GetType().Namespace, GetType().Name);
-
-        
-        private LevelCollectionViewController _levelCollectionViewController;
-        
-        private SelectLevelCategoryViewController _selectLevelCategoryViewController;
-        
-        private GameplaySetupViewController _gameplaySetupViewController;
-        
-        private LevelFilteringNavigationController _levelFilteringNavigationController;
-        
-        private AnnotatedBeatmapLevelCollectionsViewController _annotatedBeatmapLevelCollectionsViewController;
-
         public string CurrentSongPath { get; set; } = "";
 
         private string _songName;
+
+        private SongListUtility songListUtility;
+
+        [Inject]
+        public void Constractor(SongListUtility util)
+        {
+            this.songListUtility = util;
+        }
+
         [UIValue("song-name")]
         public string SongName
         {
@@ -41,26 +41,28 @@ namespace CustomMenuMusic.Views
             set
             {
                 this._songName = value;
-                this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SongName)));
+                this.NotifyPropertyChanged();
             }
         }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
         [UIAction("play-now-play")]
         void PlayClick()
         {
-            if (Config.instance.UseCustomMenuSongs) {
+            if (PluginConfig.Instance.UseCustomMenuSongs) {
                 return;
             }
 
             if (Loader.CustomLevels.TryGetValue(Path.Combine(Environment.CurrentDirectory, Path.GetDirectoryName(this.CurrentSongPath)), out var song)) {
-                HMMainThreadDispatcher.instance.Enqueue(SongListUtility.ScrollToLevel(song.levelID, null, true));
+                HMMainThreadDispatcher.instance.Enqueue(this.songListUtility.ScrollToLevel(song.levelID, null, true));
             }
             else {
                 Util.Logger.Log($"Notfind song : {this.CurrentSongPath}");
                 Util.Logger.Log($"{Loader.CustomLevels.FirstOrDefault().Key}");
             }
+        }
+
+        public void Initialize()
+        {
+            GameplaySetup.instance.AddTab("Custom Menu Music", this.ResourceName, this);
         }
     }
 }

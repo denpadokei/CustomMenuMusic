@@ -1,4 +1,6 @@
-﻿using CustomMenuMusic.Views;
+﻿using CustomMenuMusic.Configuration;
+using CustomMenuMusic.Interfaces;
+using CustomMenuMusic.Views;
 using HMUI;
 using Newtonsoft.Json;
 using System;
@@ -8,15 +10,14 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using static CustomMenuMusic.Config;
+using Zenject;
+using static CustomMenuMusic.Views.ConfigViewController;
 using Logger = CustomMenuMusic.Util.Logger;
 
 namespace CustomMenuMusic
 {
-    class NowPlaying : MonoBehaviour
+    public class NowPlaying : MonoBehaviour, INowPlayable
     {
-        internal static NowPlaying instance;
-
         private Canvas _canvas;
         private CurvedCanvasSettings _curvedCanvasSettings;
         private CurvedTextMeshPro _nowPlayingText;
@@ -33,22 +34,15 @@ namespace CustomMenuMusic
         private static readonly Vector2 CanvasSize = new Vector2(100, 50);
         private static readonly string LabelText = "Now Playing - ";
 
-        internal static void OnLoad()
-        {
-            if (instance) return;
+        [Inject]
+        CMMTabViewController tabViewController;
 
-            instance = new GameObject("NowPlaying").AddComponent<NowPlaying>();
-            DontDestroyOnLoad(instance);
-            SceneManager.activeSceneChanged += instance.OnActiveSceneChanged;
-            Logger.Log("Created NowPlaying object.");
-        }
-
-        internal void SetCurrentSong(string newSong, bool isPath = true)
+        public void SetCurrentSong(string newSong, bool isPath = true)
         {
             if (newSong == null || newSong == string.Empty)
             {
                 _nowPlayingText.text = String.Empty;
-                if (Config.instance.ShowNowPlaying) Logger.Log("newSong was invalid", Logger.LogLevel.Warning);
+                if (PluginConfig.Instance.ShowNowPlaying) Logger.Log("newSong was invalid", Logger.LogLevel.Warning);
                 return;
             }
 
@@ -64,7 +58,7 @@ namespace CustomMenuMusic
                         var infoFileName = (File.Exists(Path.Combine(songDirectory, "info.json"))) ? "info.json" : "info.dat";
                         dynamic songInfo = JsonConvert.DeserializeObject(File.ReadAllText(Path.Combine(songDirectory, infoFileName)));
                         songName = songInfo.songName ?? songInfo._songName;
-                        TabViewController.instance.SongName = this.songName;
+                        tabViewController.SongName = this.songName;
                     }
                     catch (Exception e)
                     {
@@ -82,22 +76,22 @@ namespace CustomMenuMusic
                 _nowPlayingText.text = String.Empty;
         }
 
-        internal void SetLocation(Config.Location location)
+        public void SetLocation(ConfigViewController.Location location)
         {
             Vector3 position;
             Vector3 rotation;
 
             switch (location)
             {
-                case Config.Location.LeftPanel:
+                case ConfigViewController.Location.LeftPanel:
                     position = LeftPosition;
                     rotation = LeftRotation;
                     break;
-                case Config.Location.CenterPanel:
+                case ConfigViewController.Location.CenterPanel:
                     position = CenterPosition;
                     rotation = CenterRotation;
                     break;
-                case Config.Location.RightPanel:
+                case ConfigViewController.Location.RightPanel:
                     position = RightPosition;
                     rotation = RightRotation;
                     break;
@@ -113,7 +107,8 @@ namespace CustomMenuMusic
 
         private void Awake()
         {
-            SetLocation((Location)Config.instance.NowPlayingLocation);
+            Logger.Log("Awake call");
+            SetLocation((Location)PluginConfig.Instance.NowPlayingLocation);
 
             _canvas = gameObject.AddComponent<Canvas>();
             _curvedCanvasSettings = gameObject.AddComponent<CurvedCanvasSettings>();
@@ -133,13 +128,6 @@ namespace CustomMenuMusic
 
             _canvas.enabled = true;
         }
-
-        private void OnDestroy()
-        {
-            SceneManager.activeSceneChanged -= instance.OnActiveSceneChanged;
-            instance = null;
-        }
-
         private CurvedTextMeshPro CreateText(RectTransform parent, string text, Vector2 anchoredPosition) => CreateText(parent, text, anchoredPosition, new Vector2(0, 0));
 
         private CurvedTextMeshPro CreateText(RectTransform parent, string text, Vector2 anchoredPosition, Vector2 sizeDelta)
@@ -164,9 +152,9 @@ namespace CustomMenuMusic
             return textMesh;
         }
 
-        internal void SetTextColor() => SetTextColor(Config.instance.NowPlayingColor);
+        public void SetTextColor() => SetTextColor(PluginConfig.Instance.NowPlayingColor);
 
-        internal void SetTextColor(int colorIndex) => _nowPlayingText.color = colors[colorIndex].Item1;
+        public void SetTextColor(int colorIndex) => _nowPlayingText.color = colors[colorIndex].Item1;
 
         internal static readonly List<Tuple<Color, string>> colors = new List<Tuple<Color, string>>()
         {
@@ -191,12 +179,6 @@ namespace CustomMenuMusic
             { MyColors.HintOfGreen, "Hint of Green" },
             { MyColors.BestGirl, "Best Girl" }
         };
-
-        private void OnActiveSceneChanged(Scene prevScene, Scene nextScene)
-        {
-            if (nextScene.name != "MenuCore")
-                _nowPlayingText.text = string.Empty;
-        }
     }
 
     struct MyColors

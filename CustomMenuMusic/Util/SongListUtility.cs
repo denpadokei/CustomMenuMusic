@@ -9,36 +9,33 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using Zenject;
 
 namespace CustomMenuMusic.Util
 {
-    static class SongListUtility
+    public class SongListUtility
     {
-        private static LevelCollectionViewController _levelCollectionViewController;
+        private LevelCollectionViewController _levelCollectionViewController;
+        private SelectLevelCategoryViewController _selectLevelCategoryViewController;
+        private LevelFilteringNavigationController _levelFilteringNavigationController;
+        private AnnotatedBeatmapLevelCollectionsViewController _annotatedBeatmapLevelCollectionsViewController;
 
-        private static SelectLevelCategoryViewController _selectLevelCategoryViewController;
-
-        private static LevelFilteringNavigationController _levelFilteringNavigationController;
-
-        private static AnnotatedBeatmapLevelCollectionsViewController _annotatedBeatmapLevelCollectionsViewController;
-
-        public static void Setup()
+        [Inject]
+        public void Constractor(DiContainer container)
         {
-            _levelCollectionViewController = Resources.FindObjectsOfTypeAll<LevelCollectionViewController>().FirstOrDefault();
-            _levelFilteringNavigationController = Resources.FindObjectsOfTypeAll<LevelFilteringNavigationController>().FirstOrDefault();
-            _annotatedBeatmapLevelCollectionsViewController = Resources.FindObjectsOfTypeAll<AnnotatedBeatmapLevelCollectionsViewController>().FirstOrDefault();
-            _selectLevelCategoryViewController = Resources.FindObjectsOfTypeAll<SelectLevelCategoryViewController>().FirstOrDefault();
+            _levelCollectionViewController = container.Resolve<LevelCollectionViewController>();
+            _levelFilteringNavigationController = container.Resolve<LevelFilteringNavigationController>();
+            _annotatedBeatmapLevelCollectionsViewController = container.Resolve<AnnotatedBeatmapLevelCollectionsViewController>();
+            _selectLevelCategoryViewController = container.Resolve<SelectLevelCategoryViewController>();
         }
-
-
-        private static void SelectCustomSongPack(int index)
+        private void SelectCustomSongPack(int index)
         {
             var segcontrol = _selectLevelCategoryViewController.GetField<IconSegmentedControl, SelectLevelCategoryViewController>("_levelFilterCategoryIconSegmentedControl");
             segcontrol.SelectCellWithNumber(index);
             _selectLevelCategoryViewController.LevelFilterCategoryIconSegmentedControlDidSelectCell(segcontrol, index);
         }
 
-        public static IEnumerator ScrollToLevel(string levelID, Action<bool> callback, bool animated, bool isRetry = false)
+        public IEnumerator ScrollToLevel(string levelID, Action<bool> callback, bool animated, bool isRetry = false)
         {
             if (_levelCollectionViewController) {
                 yield return new WaitWhile(() => !Loader.AreSongsLoaded || Loader.AreSongsLoading);
@@ -70,7 +67,7 @@ namespace CustomMenuMusic.Util
         }
 
 
-        private static void SongBrowserCancelFilter()
+        private void SongBrowserCancelFilter()
         {
             if (PluginManager.GetPlugin("SongBrowser") != null) {
                 var songBrowserUI = SongBrowser.SongBrowserApplication.Instance.GetField<SongBrowser.UI.SongBrowserUI, SongBrowser.SongBrowserApplication>("_songBrowserUI");
