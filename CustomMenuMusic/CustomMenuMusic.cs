@@ -63,7 +63,7 @@ namespace CustomMenuMusic
         private static readonly string CustomSongsPath = Path.Combine(Environment.CurrentDirectory, "Beat Saber_Data", "CustomLevels");
         private static readonly string UserDataPath = Path.Combine(Environment.CurrentDirectory, "UserData", "CustomMenuMusic");
         private static readonly string MenuSongsPath = "MenuSongs";
-        private static readonly string ResultSongsPath = "ResultSong";
+        private static readonly string ResultSongsPath = "ResultSound";
         private void SceneManager_activeSceneChanged(Scene arg0, Scene arg1)
         {
             this._currentSceneName = arg1.name;
