@@ -1,40 +1,60 @@
-﻿using IPA;
+﻿using CustomMenuMusic.Installer;
+using IPA;
+using IPA.Config;
+using IPA.Config.Stores;
+using SiraUtil.Zenject;
+using System;
 using System.Reflection;
 using UnityEngine.SceneManagement;
 
 namespace CustomMenuMusic
 {
-    [Plugin(RuntimeOptions.SingleStartInit)]
+    [Plugin(RuntimeOptions.DynamicInit)]
     public class Plugin
     {
+        public static Plugin Instance { get; private set; }
+
         public string Name => "Custom Menu Music";
         public string ID => "CustomMenuMusic";
         public string Version => Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        private System.Random seedMaker = new System.Random(Environment.TickCount);
+        public int Seed => this.seedMaker.Next();
 
+        public const string HarmonyID = "CustomMenuMusic.denpadokei.com.github";
+        internal static HarmonyLib.Harmony Harmony;
         [Init]
-        public void Init(IPA.Logging.Logger log)
+        public void Init(IPA.Logging.Logger log, Config conf, Zenjector zenjector)
         {
+            Instance = this;
             Util.Logger.logger = log;
-
-            SceneManager.sceneLoaded += OnSceneLoaded;
+            Configuration.PluginConfig.Instance = conf.Generated<Configuration.PluginConfig>();
+            Util.Logger.logger.Debug("Config loaded");
+            Harmony = new HarmonyLib.Harmony(HarmonyID);
+            zenjector.OnMenu<CMMMenuInstaller>();
         }
 
         [OnStart]
-        public void OnStart() => CustomMenuMusic.OnLoad();
-
-        public void OnSceneLoaded(Scene scene, LoadSceneMode sceneMode)
+        public void OnStart()
         {
-            if (scene.name == "MenuCore")
-                Config.instance.CreateSettingsUI();
+            
+        }
+
+        [OnEnable]
+        public void OnEnable()
+        {
+            Harmony.PatchAll(Assembly.GetExecutingAssembly());
+        }
+
+        [OnDisable]
+        public void OnDisable()
+        {
+            Harmony.UnpatchAll(HarmonyID);
         }
 
         [OnExit]
-        public void OnApplicationQuit() => SceneManager.sceneLoaded -= OnSceneLoaded;
-
-        public void OnSceneUnloaded(Scene scene)
+        public void OnApplicationQuit()
         {
-            if (scene.name == "MenuCore")
-                Config.initialized = false;
+
         }
     }
 }

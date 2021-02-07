@@ -1,274 +1,288 @@
 ﻿using BS_Utils.Utilities;
-using CustomMenuMusic.Util;
+using CustomMenuMusic.Configuration;
+using CustomMenuMusic.Interfaces;
 using CustomMenuMusic.Views;
+using IPA.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
+using Zenject;
 using Logger = CustomMenuMusic.Util.Logger;
 
 namespace CustomMenuMusic
 {
-    class CustomMenuMusic : MonoBehaviour
+    public class CustomMenuMusic : MonoBehaviour, ICustomMenuMusicable
     {
-        internal static CustomMenuMusic instance;
-
-        private AudioClip _menuMusic;
-        private SongPreviewPlayer _previewPlayer;
-
-        private AudioSource _currentAudioSource;
-        private int _currentAudioSourceIndex;
-        private bool _sceneDidTransition = false;
-        private bool _isLoadingAudioClip = false;
+        private volatile bool _sceneDidTransition = false;
+        private volatile bool _isLoadingAudioClip = false;
+        private volatile bool _isChangeing = false;
         private bool _overrideCustomSongsList = false;
+        private string _currentSceneName = "MenuCore";
+        private RandomObjectPicker<string> filePathPicker;
+        public static AudioClip MenuMusic { get; set; }
+        public float Volume
+        {
+            get => this.PreviewPlayer.GetField<float, SongPreviewPlayer>("_ambientVolumeScale");
+            set => this.PreviewPlayer.SetField("_ambientVolumeScale", value);
+        }
+        public int ActiveChannel => PreviewPlayer.GetField<int, SongPreviewPlayer>("_activeChannel");
+        public AudioSource ActiveAudioSource
+        {
+            get
+            {
+                if (this.AudioSources.Length > (uint)this.ActiveChannel) {
+                    return this.AudioSources[this.ActiveChannel];
+                }
+                else {
+                    return null;
+                }
+            }
+        }
+        public AudioSource[] AudioSources => this.PreviewPlayer.GetField<AudioSource[], SongPreviewPlayer>("_audioSources");
+        [Inject]
+        INowPlayable nowPlay;
+        [Inject]
+        CMMTabViewController tabViewController;
+        [Inject]
+        SongPreviewPlayer PreviewPlayer { get; }
+        [Inject]
+        ResultsViewController ResultsViewController { get; }
 
-        public String CurrentSongPath { get; private set; }
+        private WaitWhile waitWhileMenuMusic;
+        private WaitWhile waitWhileLoading;
+
+        public string CurrentSongPath { get; private set; }
         private const string builtInSongsFolder = "CustomMenuMusic.BuiltInSongs";
 
-        private readonly string CustomSongsPath = "Beat Saber_Data\\CustomLevels";
-        private readonly string CustomMenuSongsPath = "CustomMenuSongs";
-
-        private IEnumerable<string> AllSongFilePaths = Array.Empty<string>();
-
-        internal static void OnLoad()
+        private static readonly string CustomSongsPath = Path.Combine(Environment.CurrentDirectory, "Beat Saber_Data", "CustomLevels");
+        private static readonly string UserDataPath = Path.Combine(Environment.CurrentDirectory, "UserData", "CustomMenuMusic");
+        private static readonly string MenuSongsPath = "MenuSongs";
+        private static readonly string ResultSongsPath = "ResultSong";
+        private void SceneManager_activeSceneChanged(Scene arg0, Scene arg1)
         {
-            if (instance == null)
-                instance = new GameObject("CustomMenuMusic").AddComponent<CustomMenuMusic>();
-            BSEvents.lateMenuSceneLoadedFresh += BSEvents_lateMenuSceneLoadedFresh;
+            this._currentSceneName = arg1.name;
         }
-
-        private static void BSEvents_lateMenuSceneLoadedFresh(ScenesTransitionSetupDataSO obj)
+        #region Unity Message
+        private async void Awake()
         {
-            SongListUtility.Setup();
-        }
+            Logger.Log("Awake call");
 
-        private void Awake()
-        {
-            DontDestroyOnLoad(this.gameObject);
-
-            if (!Directory.Exists(CustomMenuSongsPath))
-                Directory.CreateDirectory(CustomMenuSongsPath);
-
-            BSEvents.menuSceneActive += BSEvents_menuSceneActive;
-
-            GetSongsList();
+            this.waitWhileMenuMusic = new WaitWhile(() => MenuMusic == null || !MenuMusic);
+            this.waitWhileLoading = new WaitWhile(() => this._isLoadingAudioClip);
+            this._sceneDidTransition = true;
+            SceneManager.activeSceneChanged += SceneManager_activeSceneChanged;
+            BSEvents.menuSceneActive += this.BSEvents_menuSceneActive;
+            BSEvents.gameSceneActive += this.BSEvents_gameSceneActive;
+            if (!Directory.Exists(UserDataPath))
+                Directory.CreateDirectory(UserDataPath);
+            HMMainThreadDispatcher.instance.Enqueue(this.SetResultSong());
+            await GetSongsListAsync();
+            this.Restart();
         }
 
         private void OnDestroy()
         {
-            BSEvents.menuSceneActive -= BSEvents_menuSceneActive;
-            BSEvents.lateMenuSceneLoadedFresh -= BSEvents_lateMenuSceneLoadedFresh;
-            instance = null;
+            SceneManager.activeSceneChanged -= SceneManager_activeSceneChanged;
+            BSEvents.menuSceneActive -= this.BSEvents_menuSceneActive;
+            BSEvents.gameSceneActive -= this.BSEvents_gameSceneActive;
         }
-
         private void Update()
         {
-            if (SceneManager.GetActiveScene().name == "GameCore") return;
-
-            if (Input.GetKeyDown(KeyCode.Period))
-                StartCoroutine(LoadAudioClip());
-
-            if (Config.instance.Loop || !_previewPlayer || _isLoadingAudioClip) return;
-
-            try
-            {
-                if ((bool)!_previewPlayer?.GetField<AudioSource[]>("_audioSources")?[_previewPlayer.GetField<int>("_activeChannel")]?.isPlaying)
-                    StartCoroutine(LoadAudioClip(true));
+            if (_currentSceneName != "MenuCore") {
+                return;
             }
-            catch { }
+            if (Input.GetKeyDown(KeyCode.Period)) {
+                this.Next();
+            }
         }
 
+        private void LateUpdate()
+        {
+            if (PluginConfig.Instance.Loop) {
+                return;
+            }
+            if (_currentSceneName != "MenuCore") {
+                return;
+            }
+            if (this._isChangeing || this._isLoadingAudioClip || !this.PreviewPlayer || this.ActiveAudioSource == null) {
+                return;
+            }
+            if (!this.ActiveAudioSource.isPlaying) {
+                this.Next();
+            }
+        }
+        #endregion
+        /// <summary>
+        /// ゲームシーン中にメニュー画面の曲読み込み（激重）を行うという背徳感まみれの処理。
+        /// </summary>
+        private void BSEvents_gameSceneActive()
+        {
+            HMMainThreadDispatcher.instance.Enqueue(this.LoadAudioClip());
+        }
+
+        /// <summary>
+        /// よくわかんないけど残してる処理
+        /// </summary>
         private void BSEvents_menuSceneActive()
         {
-            if (Config.instance.ShowNowPlaying)
-                NowPlaying.OnLoad();
-            _sceneDidTransition = true;
-
-            StartCoroutine(LoadAudioClip());
+            this._sceneDidTransition = true;
         }
 
-        internal async void GetSongsList() => await GetSongsListAsync(Config.instance.UseCustomMenuSongs);
+        public Task GetSongsListAsync() => GetSongsListAsync(PluginConfig.Instance.UseCustomMenuSongs);
 
-        internal async Task GetSongsListAsync(bool useCustomMenuSongs)
+        public Task GetSongsListAsync(bool useCustomMenuSongs)
         {
-            await new WaitForBackgroundThread();
-
-            AllSongFilePaths = Array.Empty<string>();
-
-            if (useCustomMenuSongs)
-                AllSongFilePaths = await GetAllCustomMenuSongsAsync();
-            else
-                AllSongFilePaths = await GetAllCustomSongsAsync();
-
-            _overrideCustomSongsList = !AllSongFilePaths.Any();
-        }
-
-        private async Task<IEnumerable<string>> GetAllCustomMenuSongsAsync()
-        {
-            if (!Directory.Exists(CustomMenuSongsPath))
-                Directory.CreateDirectory(CustomMenuSongsPath);
-            var stopWatch = new Stopwatch();
-            stopWatch.Start();
-            var FilePaths = await Task.Run(() => Directory.EnumerateFiles(this.CustomMenuSongsPath, "*.ogg", SearchOption.AllDirectories));
-            stopWatch.Stop();
-            Logger.Log($"Found {AllSongFilePaths.Count()} Custom Menu Songs in {stopWatch.ElapsedMilliseconds} milliseconds.",
-                (AllSongFilePaths.Any()) ? Logger.LogLevel.Debug : Logger.LogLevel.Warning);
-
-            return FilePaths;
-        }
-
-        private async Task<IEnumerable<string>> GetAllCustomSongsAsync()
-        {
-            var stopWatch = new Stopwatch();
-            stopWatch.Start();
-            var FilePaths = await DirSearchAsync(CustomSongsPath);
-            stopWatch.Stop();
-            Logger.Log($"Found {FilePaths.Count} Custom Songs in {stopWatch.ElapsedMilliseconds} milliseconds.", Logger.LogLevel.Debug);
-
-            return FilePaths;
-        }
-
-        private async Task<List<String>> DirSearchAsync(string sDir)
-        {
-            var files = new List<String>();
-            try
+            return Task.Run(() =>
             {
-                await Task.Run(() =>
-                {
-                    files.AddRange(Directory.EnumerateFiles(sDir, "*.egg", SearchOption.AllDirectories));
-                });
+                if (!Directory.Exists(Path.Combine(UserDataPath, MenuSongsPath))) {
+                    Directory.CreateDirectory(Path.Combine(UserDataPath, MenuSongsPath));
+                }
+                if (useCustomMenuSongs) {
+                    this.filePathPicker = new RandomObjectPicker<string>(GetAllCustomMenuSongsAsync().ToArray(), 0f);
+                }
+                else {
+                    this.filePathPicker = new RandomObjectPicker<string>(GetAllCustomSongsAsync().ToArray(), 0f);
+                }
+                _overrideCustomSongsList = !filePathPicker.GetField<string[], RandomObjectPicker<string>>("_objects").Any();
+            });
+        }
+
+        private IEnumerable<string> GetAllCustomMenuSongsAsync()
+        {
+            return Directory.EnumerateFiles(Path.Combine(UserDataPath, MenuSongsPath), "*.ogg", SearchOption.AllDirectories);
+        }
+
+        private IEnumerable<string> GetAllCustomSongsAsync()
+        {
+            return DirSearch(CustomSongsPath);
+        }
+
+        private string GetResultSongPath()
+        {
+            if (!Directory.Exists(Path.Combine(UserDataPath, ResultSongsPath))) {
+                Directory.CreateDirectory(Path.Combine(UserDataPath, ResultSongsPath));
             }
-            catch (Exception e)
-            {
-                Logger.Log($"{ e.Message} - {e.StackTrace}", Logger.LogLevel.Error);
+            return Directory.EnumerateFiles(Path.Combine(UserDataPath, ResultSongsPath), "*.wav", SearchOption.AllDirectories).FirstOrDefault();
+        }
+
+        private IEnumerator SetResultSong()
+        {
+            var resultSound = this.GetResultSongPath();
+            if (!PluginConfig.Instance.CustomResultSound) {
+                yield break;
             }
-            return files;
+            if (string.IsNullOrEmpty(resultSound)) {
+                yield break;
+            }
+            Logger.Log("Loading file @ " + resultSound);
+            var clipResponse = UnityWebRequestMultimedia.GetAudioClip(resultSound, AudioType.WAV);
+            yield return clipResponse.SendWebRequest();
+            if (clipResponse.error != null) {
+                Logger.Log($"Unity Web Request Failed! Error: {clipResponse.error}", Logger.LogLevel.Error);
+                yield break;
+            }
+            else {
+                this.ResultsViewController.SetField("_levelClearedAudioClip", DownloadHandlerAudioClip.GetContent(clipResponse));
+            }
+        }
+
+        private IEnumerable<string> DirSearch(string sDir)
+        {
+            return Directory.EnumerateFiles(sDir, "*.egg", SearchOption.AllDirectories);
         }
 
         private string GetNewSong()
         {
-            UnityEngine.Random.InitState(Environment.TickCount);
-            var index = UnityEngine.Random.Range(0, AllSongFilePaths.Count() - 1);
-            return AllSongFilePaths.ElementAt(index);
+            UnityEngine.Random.InitState(Plugin.Instance.Seed);
+            return this.filePathPicker.PickRandomObject();
         }
 
-        IEnumerator LoadAudioClip(bool startAtBeginning = false, int attempts = 0)
+        private IEnumerator LoadAudioClip()
         {
-            if (attempts > 2 || _isLoadingAudioClip) yield break;
-
+            if (_isLoadingAudioClip) yield break;
             _isLoadingAudioClip = true;
+            yield return new WaitUntil(() => this.filePathPicker != null || _overrideCustomSongsList);
 
-            yield return new WaitUntil(() => AllSongFilePaths.Any() || _overrideCustomSongsList);
-
-            yield return new WaitUntil(() => _previewPlayer = Resources.FindObjectsOfTypeAll<SongPreviewPlayer>().FirstOrDefault());
-            try {
-                if (_sceneDidTransition && (uint)_previewPlayer.GetField<int>("_activeChannel") < _previewPlayer.GetField<AudioSource[]>("_audioSources").Length) {
-                    _previewPlayer.GetField<AudioSource[]>("_audioSources")[_previewPlayer.GetField<int>("_activeChannel")].Stop();
-                    _sceneDidTransition = false;
-                }
+            CurrentSongPath = GetNewSong();
+            if (!PluginConfig.Instance.UseCustomMenuSongs) {
+                this.tabViewController.CurrentSongPath = this.CurrentSongPath;
             }
-            catch (Exception e) {
-                Logger.Log($"{e}", Logger.LogLevel.Error);
+            Logger.Log("Loading file @ " + CurrentSongPath);
+            var clipResponse = UnityWebRequestMultimedia.GetAudioClip(CurrentSongPath, AudioType.OGGVORBIS);
+            yield return clipResponse.SendWebRequest();
+            if (clipResponse.error != null) {
+                Logger.Log($"Unity Web Request Failed! Error: {clipResponse.error}", Logger.LogLevel.Error);
+                _isLoadingAudioClip = false;
+                yield break;
             }
-            if (_overrideCustomSongsList)
-            {
-                try
-                {
-                    var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("CustomMenuMusic.Resources.default.asset");
-                    var assetBundle = AssetBundle.LoadFromStream(stream);
-
-                    _menuMusic = assetBundle.LoadAllAssets<AudioClip>().FirstOrDefault();
-                    assetBundle.Unload(false);
-                    Logger.Log("This is so sad, Beat Saber play Despacito", Logger.LogLevel.Notice);
+            else {
+                if (MenuMusic != null) {
+                    Destroy(MenuMusic);
+                    MenuMusic = null;
                 }
-                catch (Exception e)
-                {
-                    Logger.Log("Error loading AssetBundle", Logger.LogLevel.Error);
-                    Logger.Log($"{e.Message}\n{e.StackTrace}", Logger.LogLevel.Error);
-                    _overrideCustomSongsList = false;
-                    if (AllSongFilePaths.Any())
-                        StartCoroutine(LoadAudioClip(startAtBeginning, ++attempts));
-                }
+                MenuMusic = DownloadHandlerAudioClip.GetContent(clipResponse);
+                MenuMusic.name = Path.GetFileName(CurrentSongPath);
             }
-            else
-            {
-                try {
-                    CurrentSongPath = GetNewSong();
-                    if (!Config.instance.UseCustomMenuSongs) {
-                        TabViewController.instance.CurrentSongPath = this.CurrentSongPath;
-                    }
-                    Logger.Log("Loading file @ " + CurrentSongPath);
-                }
-                catch (Exception e) {
-                    Logger.Log($"{e}", Logger.LogLevel.Error);
-                }
-                var songe = UnityWebRequestMultimedia.GetAudioClip($"{Environment.CurrentDirectory}\\{CurrentSongPath}", AudioType.OGGVORBIS);
-                yield return songe.SendWebRequest();
-
-                if (songe.error != null)
-                    Logger.Log($"Unity Web Request Failed! Error: {songe.error}", Logger.LogLevel.Error);
-                else
-                {
-                    try
-                    {
-                        _menuMusic = DownloadHandlerAudioClip.GetContent(songe);
-
-                        if (_menuMusic != null)
-                            _menuMusic.name = Path.GetFileName(CurrentSongPath);
-                        else
-                            Logger.Log("No audio found!", Logger.LogLevel.Warning);
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.Log("Can't load audio! Exception: " + e, Logger.LogLevel.Error);
-                        StartCoroutine(LoadAudioClip(startAtBeginning, ++attempts));
-                        yield break;
-                    }
-                }
+            yield return this.waitWhileMenuMusic;
+            if (_overrideCustomSongsList) {
+                this.nowPlay.SetCurrentSong(System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(MenuMusic.name), false);
             }
-
-            yield return new WaitUntil(() => _menuMusic);
-
-            if (_previewPlayer != null && _menuMusic != null)
-            {
-                try
-                {
-                    _previewPlayer.SetField("_defaultAudioClip", _menuMusic);
-                    _previewPlayer.SetField("_ambientVolumeScale", Config.instance.MenuMusicVolume);
-                    if (startAtBeginning)
-                        _previewPlayer.CrossfadeTo(_previewPlayer.GetField<AudioClip>("_defaultAudioClip"), 0, -1, _previewPlayer.GetField<float>("_ambientVolumeScale"));
-                    else
-                        _previewPlayer.CrossfadeToDefault();
-
-                    _currentAudioSourceIndex = _previewPlayer.GetField<int>("_activeChannel");
-                    _currentAudioSource = _previewPlayer.GetField<AudioSource[]>("_audioSources")[_currentAudioSourceIndex];
-                    _currentAudioSource.loop = Config.instance.Loop;
-
-                    if (_overrideCustomSongsList)
-                        NowPlaying.instance?.SetCurrentSong(System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(_menuMusic.name), false);
-                    else if (Config.instance.ShowNowPlaying && (bool)NowPlaying.instance)
-                        NowPlaying.instance?.SetCurrentSong(CurrentSongPath);
-                }
-                catch (Exception e)
-                {
-                    Logger.Log($"Oops! - {e.Message} : {e.StackTrace}", Logger.LogLevel.Error);
-                    StartCoroutine(LoadAudioClip(startAtBeginning, ++attempts));
-                }
+            else if (PluginConfig.Instance.ShowNowPlaying) {
+                this.nowPlay.SetCurrentSong(CurrentSongPath);
             }
             _isLoadingAudioClip = false;
         }
 
-        private class WaitForBackgroundThread
+        private void Restart()
         {
-            public ConfiguredTaskAwaitable.ConfiguredTaskAwaiter GetAwaiter() => Task.Run(() => { }).ConfigureAwait(false).GetAwaiter();
+            HMMainThreadDispatcher.instance.Enqueue(this.LoadAudioClip());
+            HMMainThreadDispatcher.instance.Enqueue(this.StopActiveAudioSource);
+            HMMainThreadDispatcher.instance.Enqueue(this.StartAudioSource());
+        }
+
+        private void Next()
+        {
+            HMMainThreadDispatcher.instance.Enqueue(this.LoadAudioClip());
+            HMMainThreadDispatcher.instance.Enqueue(this.StartAudioSource(true));
+        }
+
+        private void StopActiveAudioSource()
+        {
+            this.PreviewPlayer.gameObject.SetActive(false);
+        }
+        private IEnumerator StartAudioSource(bool startAtBeginning = false)
+        {
+            if (this._isChangeing || !this.PreviewPlayer) {
+                yield break;
+            }
+            this._isChangeing = true;
+            yield return waitWhileLoading;
+            try {
+                this.PreviewPlayer.gameObject.SetActive(true);
+                if (PluginConfig.Instance.Loop) {
+                    this.PreviewPlayer.CrossfadeTo(MenuMusic, 0f, -1, Volume);
+                }
+                else {
+                    if (startAtBeginning) {
+                        this.PreviewPlayer.CrossfadeTo(MenuMusic, 0f, MenuMusic.length, Volume);
+                    }
+                    else {
+                        this.PreviewPlayer.CrossfadeTo(MenuMusic, UnityEngine.Random.Range(0.1f, MenuMusic.length / 2), MenuMusic.length, Volume);
+                    }
+                }
+            }
+            catch (Exception ex) {
+                Logger.Log($"{ex}");
+            }
+            finally {
+                this._isChangeing = false;
+            }
         }
     }
 }
