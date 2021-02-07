@@ -61,8 +61,8 @@ namespace CustomMenuMusic.Views
         [UIValue("loop")]
         public bool Loop
         {
-            get => PluginConfig.Instance.UseCustomMenuSongs;
-            set => PluginConfig.Instance.UseCustomMenuSongs = value;
+            get => PluginConfig.Instance.Loop;
+            set => PluginConfig.Instance.Loop = value;
         }
 
         [UIValue("volume")]

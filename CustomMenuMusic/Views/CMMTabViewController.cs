@@ -27,11 +27,13 @@ namespace CustomMenuMusic.Views
         private string _songName;
 
         private SongListUtility songListUtility;
+        private CustomMenuMusic _customMenuMusic;
 
         [Inject]
-        public void Constractor(SongListUtility util)
+        public void Constractor(SongListUtility util, CustomMenuMusic customMenuMusic)
         {
             this.songListUtility = util;
+            this._customMenuMusic = customMenuMusic;
         }
 
         [UIValue("song-name")]
@@ -63,6 +65,12 @@ namespace CustomMenuMusic.Views
         public void Initialize()
         {
             GameplaySetup.instance.AddTab("Custom Menu Music", this.ResourceName, this);
+        }
+
+        protected override void DidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling)
+        {
+            base.DidActivate(firstActivation, addedToHierarchy, screenSystemEnabling);
+            this.CurrentSongPath = this._customMenuMusic.CurrentSongPath;
         }
     }
 }

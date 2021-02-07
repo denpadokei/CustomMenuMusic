@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CustomMenuMusic</RootNamespace>
     <AssemblyName>CustomMenuMusic</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <BeatSaberDir>D:\Oculus\Software\hyperbolic-magnetism-beat-saber\Beat Saber_Data\Managed</BeatSaberDir>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -35,6 +35,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Configuration\PluginConfig.cs" />
+    <Compile Include="Harmony\SongPreviewPlayerCrossfadeToDefaultPatch.cs" />
+    <Compile Include="Harmony\SongPreviewPlayerCrossfadeToPatch.cs" />
     <Compile Include="Views\ConfigViewController.cs" />
     <Compile Include="CustomMenuMusic.cs" />
     <Compile Include="Installer\CMMMenuInstaller.cs" />
@@ -49,6 +51,11 @@
     <Compile Include="Views\CMMTabViewController.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="0Harmony, Version=2.0.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <Private>False</Private>
+      <HintPath>$(BeatSaberDir)\Libs\0Harmony.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
     <Reference Include="BSML, Version=1.1.1.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(BeatSaberDir)\Plugins\BSML.dll</HintPath>

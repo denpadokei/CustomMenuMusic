@@ -22,7 +22,6 @@ namespace CustomMenuMusic
         private CurvedCanvasSettings _curvedCanvasSettings;
         private CurvedTextMeshPro _nowPlayingText;
         private string songName;
-
         private static readonly Vector3 LeftPosition = new Vector3(-2.55f, 2.2f, 1);
         private static readonly Vector3 CenterPosition = new Vector3(-1.05f, 2.45f, 2.6f);
         private static readonly Vector3 RightPosition = new Vector3(1.9f, 2.2f, 2.2f);
@@ -58,7 +57,7 @@ namespace CustomMenuMusic
                         var infoFileName = (File.Exists(Path.Combine(songDirectory, "info.json"))) ? "info.json" : "info.dat";
                         dynamic songInfo = JsonConvert.DeserializeObject(File.ReadAllText(Path.Combine(songDirectory, infoFileName)));
                         songName = songInfo.songName ?? songInfo._songName;
-                        tabViewController.SongName = this.songName;
+                        
                     }
                     catch (Exception e)
                     {
@@ -74,6 +73,7 @@ namespace CustomMenuMusic
                 _nowPlayingText.text = $"{LabelText}{songName}";
             else
                 _nowPlayingText.text = String.Empty;
+            tabViewController.SongName = this.songName;
         }
 
         public void SetLocation(ConfigViewController.Location location)
