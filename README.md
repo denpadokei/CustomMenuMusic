@@ -2,7 +2,7 @@
 
 ## Custom Menu Music v2.0.0
 Changes the music in the menu! You can use either a randomly selected song from your Custom Songs library, or add your own music to the `BeatSaber\UserData\CustomMenuMusic\MenuSongs` folder.  
-ハイスコア更新時の音楽を変更できます。`BeatSaber\UserData\CustomMenuMusic\ResultSong`現在はwavのみ対応しています。複数入れても一個しか読み込まれません。  
+ハイスコア更新時の音楽を変更できます。`BeatSaber\UserData\CustomMenuMusic\ResultSound`現在はwavのみ対応しています。複数入れても一個しか読み込まれません。  
   
   
 # 依存MOD  
