@@ -63,7 +63,7 @@ namespace CustomMenuMusic
         private static readonly string CustomSongsPath = Path.Combine(Environment.CurrentDirectory, "Beat Saber_Data", "CustomLevels");
         private static readonly string UserDataPath = Path.Combine(Environment.CurrentDirectory, "UserData", "CustomMenuMusic");
         private static readonly string MenuSongsPath = "MenuSongs";
-        private static readonly string ResultSongsPath = "ResultSongs";
+        private static readonly string ResultSongsPath = "ResultSong";
         private void SceneManager_activeSceneChanged(Scene arg0, Scene arg1)
         {
             this._currentSceneName = arg1.name;
@@ -140,6 +140,9 @@ namespace CustomMenuMusic
         {
             return Task.Run(() =>
             {
+                if (!Directory.Exists(Path.Combine(UserDataPath, MenuSongsPath))) {
+                    Directory.CreateDirectory(Path.Combine(UserDataPath, MenuSongsPath));
+                }
                 if (useCustomMenuSongs) {
                     this.filePathPicker = new RandomObjectPicker<string>(GetAllCustomMenuSongsAsync().ToArray(), 0f);
                 }
@@ -152,9 +155,6 @@ namespace CustomMenuMusic
 
         private IEnumerable<string> GetAllCustomMenuSongsAsync()
         {
-            if (!Directory.Exists(Path.Combine(UserDataPath, MenuSongsPath))) {
-                Directory.CreateDirectory(Path.Combine(UserDataPath, MenuSongsPath));
-            }
             return Directory.EnumerateFiles(Path.Combine(UserDataPath, MenuSongsPath), "*.ogg", SearchOption.AllDirectories);
         }
 

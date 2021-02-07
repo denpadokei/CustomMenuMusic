@@ -14,43 +14,6 @@ namespace CustomMenuMusic.Views
 {
     public class ConfigViewController : BSMLAutomaticViewController, IInitializable
     {
-        internal void Load()
-        {
-            //Util.Logger.Log("Loading config!");
-
-            //UseCustomMenuSongs = config.GetBool(sectionCore, useCustomMenuSongs, false, true);
-            //Loop = config.GetBool(sectionCore, loop, false, true);
-            //MenuMusicVolume = config.GetFloat(sectionCore, menuMusicVolume, 0.5f, true);
-            //ShowNowPlaying = config.GetBool(sectionNowPlaying, showNowPlaying, true, true);
-            //NowPlayingLocation = config.GetInt(sectionNowPlaying, nowPlayingLocation, 0, true);
-            //NowPlayingColor = config.GetInt(sectionNowPlaying, nowPlayingColor, 0, true);
-        }
-        internal void Save()
-        {
-            //Util.Logger.Log("Saving config!");
-            //config.SetBool(sectionCore, useCustomMenuSongs, UseCustomMenuSongs);
-            //config.SetBool(sectionCore, loop, Loop);
-            //config.SetFloat(sectionCore, menuMusicVolume, MenuMusicVolume);
-            //config.SetBool(sectionNowPlaying, showNowPlaying, ShowNowPlaying);
-            //config.SetInt(sectionNowPlaying, nowPlayingLocation, NowPlayingLocation);
-            //config.SetInt(sectionNowPlaying, nowPlayingColor, NowPlayingColor);
-
-            //customMenuMusic.GetSongsListAsync();
-            //StartCoroutine(SetVolume());
-            //nowPlay.SetCurrentSong(ShowNowPlaying ? customMenuMusic.CurrentSongPath : String.Empty);
-            //nowPlay.SetTextColor(NowPlayingColor);
-            //nowPlay.SetLocation((Location)NowPlayingLocation);
-        }
-
-        IEnumerator SetVolume()
-        {
-            yield break;
-            //SongPreviewPlayer _previewPlayer = null;
-            //yield return new WaitUntil(() => _previewPlayer = Resources.FindObjectsOfTypeAll<SongPreviewPlayer>().FirstOrDefault());
-            //_previewPlayer.volume = MenuMusicVolume;
-        }
-
-
         [UIValue("use-custom-menu-songs")]
         public bool UseCustomMenuSongs
         {
@@ -91,6 +54,13 @@ namespace CustomMenuMusic.Views
         {
             get => PluginConfig.Instance.NowPlayingColor;
             set => PluginConfig.Instance.NowPlayingColor = value;
+        }
+
+        [UIValue("use-custom-result-songs")]
+        public bool CustomResultSound
+        {
+            get => PluginConfig.Instance.CustomResultSound;
+            set => PluginConfig.Instance.CustomResultSound = value;
         }
 
         [UIValue("volume-range")]
