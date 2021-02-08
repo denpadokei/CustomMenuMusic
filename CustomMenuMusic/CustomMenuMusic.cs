@@ -44,7 +44,8 @@ namespace CustomMenuMusic
                 }
             }
         }
-        public AudioSource[] AudioSources => this.PreviewPlayer.GetField<AudioSource[], SongPreviewPlayer>("_audioSources");
+        private AudioSource[] _audioSources;
+        public AudioSource[] AudioSources => _audioSources ?? (_audioSources = (AudioSource[])this.PreviewPlayer.GetField<AudioSource[], SongPreviewPlayer>("_audioSources").Clone());
         [Inject]
         INowPlayable nowPlay;
         [Inject]
@@ -78,7 +79,6 @@ namespace CustomMenuMusic
             this._sceneDidTransition = true;
             SceneManager.activeSceneChanged += SceneManager_activeSceneChanged;
             BSEvents.menuSceneActive += this.BSEvents_menuSceneActive;
-            BSEvents.gameSceneActive += this.BSEvents_gameSceneActive;
             if (!Directory.Exists(UserDataPath))
                 Directory.CreateDirectory(UserDataPath);
             HMMainThreadDispatcher.instance.Enqueue(this.SetResultSong());
@@ -90,7 +90,9 @@ namespace CustomMenuMusic
         {
             SceneManager.activeSceneChanged -= SceneManager_activeSceneChanged;
             BSEvents.menuSceneActive -= this.BSEvents_menuSceneActive;
-            BSEvents.gameSceneActive -= this.BSEvents_gameSceneActive;
+            if (this._audioSources != null) {
+                this._audioSources = null;
+            }
         }
         private void Update()
         {
@@ -113,19 +115,22 @@ namespace CustomMenuMusic
             if (this._isChangeing || this._isLoadingAudioClip || !this.PreviewPlayer || this.ActiveAudioSource == null) {
                 return;
             }
+            if (this.ActiveAudioSource == null) {
+                return;
+            }
             if (!this.ActiveAudioSource.isPlaying) {
                 this.Next();
             }
         }
-        #endregion
-        /// <summary>
-        /// ゲームシーン中にメニュー画面の曲読み込み（激重）を行うという背徳感まみれの処理。
-        /// </summary>
-        private void BSEvents_gameSceneActive()
+        private void OnEnable()
+        {
+            this._audioSources = null;
+        }
+        private void OnDisable()
         {
             HMMainThreadDispatcher.instance.Enqueue(this.LoadAudioClip());
         }
-
+        #endregion
         /// <summary>
         /// よくわかんないけど残してる処理
         /// </summary>
