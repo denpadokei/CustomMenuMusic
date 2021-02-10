@@ -18,9 +18,6 @@ namespace CustomMenuMusic.Harmony
         ///// <returns></returns>
         public static bool Prefix(SongPreviewPlayer __instance, ref int ____activeChannel, ref AudioSource[] ____audioSources, ref bool ____transitionAfterDelay)
         {
-            if (!PluginConfig.Instance.Loop) {
-                ____transitionAfterDelay = false;
-            }
             if (____audioSources.Length <= (uint)____activeChannel) {
                 return false;
             }
@@ -28,10 +25,7 @@ namespace CustomMenuMusic.Harmony
                 return false;
             }
             if (CustomMenuMusic.MenuMusic) {
-                __instance.CrossfadeTo(CustomMenuMusic.MenuMusic, UnityEngine.Random.Range(0.1f, CustomMenuMusic.MenuMusic.length / 2), CustomMenuMusic.MenuMusic.length, PluginConfig.Instance.MenuMusicVolume);
-            }
-            else {
-                __instance.FadeOut();
+                __instance.CrossfadeTo(CustomMenuMusic.MenuMusic, UnityEngine.Random.Range(0.1f, CustomMenuMusic.MenuMusic.length / 2), PluginConfig.Instance.Loop ? -1 : CustomMenuMusic.MenuMusic.length, PluginConfig.Instance.MenuMusicVolume);
             }
             return false;
         }

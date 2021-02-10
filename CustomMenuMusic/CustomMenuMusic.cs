@@ -26,11 +26,6 @@ namespace CustomMenuMusic
         private string _currentSceneName = "MenuCore";
         private RandomObjectPicker<string> filePathPicker;
         public static AudioClip MenuMusic { get; set; }
-        public float Volume
-        {
-            get => this.PreviewPlayer.GetField<float, SongPreviewPlayer>("_ambientVolumeScale");
-            set => this.PreviewPlayer.SetField("_ambientVolumeScale", value);
-        }
         public int ActiveChannel => PreviewPlayer.GetField<int, SongPreviewPlayer>("_activeChannel");
         public AudioSource ActiveAudioSource
         {
@@ -44,8 +39,7 @@ namespace CustomMenuMusic
                 }
             }
         }
-        private AudioSource[] _audioSources;
-        public AudioSource[] AudioSources => _audioSources ?? (_audioSources = (AudioSource[])this.PreviewPlayer.GetField<AudioSource[], SongPreviewPlayer>("_audioSources").Clone());
+        public AudioSource[] AudioSources => this.PreviewPlayer.GetField<AudioSource[], SongPreviewPlayer>("_audioSources");
         [Inject]
         INowPlayable nowPlay;
         [Inject]
@@ -79,6 +73,8 @@ namespace CustomMenuMusic
             this._sceneDidTransition = true;
             SceneManager.activeSceneChanged += SceneManager_activeSceneChanged;
             BSEvents.menuSceneActive += this.BSEvents_menuSceneActive;
+            HMMainThreadDispatcher.instance.Enqueue(this.SetVolume());
+            PluginConfig.Instance.OnSettingChanged += this.Instance_OnSettingChanged;
             if (!Directory.Exists(UserDataPath))
                 Directory.CreateDirectory(UserDataPath);
             HMMainThreadDispatcher.instance.Enqueue(this.SetResultSong());
@@ -86,19 +82,24 @@ namespace CustomMenuMusic
             this.Restart();
         }
 
+        private void Instance_OnSettingChanged(PluginConfig obj)
+        {
+            try {
+                this.PreviewPlayer.SetField("_ambientVolumeScale", obj.MenuMusicVolume);
+            }
+            catch (Exception e) {
+                Logger.Log($"{e}");
+            }
+        }
+
         private void OnDestroy()
         {
             SceneManager.activeSceneChanged -= SceneManager_activeSceneChanged;
             BSEvents.menuSceneActive -= this.BSEvents_menuSceneActive;
-            if (this._audioSources != null) {
-                this._audioSources = null;
-            }
+            PluginConfig.Instance.OnSettingChanged -= this.Instance_OnSettingChanged;
         }
         private void Update()
         {
-            if (_currentSceneName != "MenuCore") {
-                return;
-            }
             if (Input.GetKeyDown(KeyCode.Period)) {
                 this.Next();
             }
@@ -109,26 +110,12 @@ namespace CustomMenuMusic
             if (PluginConfig.Instance.Loop) {
                 return;
             }
-            if (_currentSceneName != "MenuCore") {
+            if (this._isChangeing || this._isLoadingAudioClip || !this.PreviewPlayer) {
                 return;
             }
-            if (this._isChangeing || this._isLoadingAudioClip || !this.PreviewPlayer || this.ActiveAudioSource == null) {
-                return;
-            }
-            if (this.ActiveAudioSource == null) {
-                return;
-            }
-            if (!this.ActiveAudioSource.isPlaying) {
+            if (this.ActiveAudioSource?.isPlaying != true) {
                 this.Next();
             }
-        }
-        private void OnEnable()
-        {
-            this._audioSources = null;
-        }
-        private void OnDisable()
-        {
-            HMMainThreadDispatcher.instance.Enqueue(this.LoadAudioClip());
         }
         #endregion
         /// <summary>
@@ -137,6 +124,12 @@ namespace CustomMenuMusic
         private void BSEvents_menuSceneActive()
         {
             this._sceneDidTransition = true;
+        }
+
+        private IEnumerator SetVolume()
+        {
+            yield return new WaitWhile(() => this.PreviewPlayer == null || !this.PreviewPlayer);
+            this.PreviewPlayer.SetField("_ambientVolumeScale", PluginConfig.Instance.MenuMusicVolume);
         }
 
         public Task GetSongsListAsync() => GetSongsListAsync(PluginConfig.Instance.UseCustomMenuSongs);
@@ -148,7 +141,7 @@ namespace CustomMenuMusic
                 if (!Directory.Exists(Path.Combine(UserDataPath, MenuSongsPath))) {
                     Directory.CreateDirectory(Path.Combine(UserDataPath, MenuSongsPath));
                 }
-                if (useCustomMenuSongs) {
+                if (useCustomMenuSongs && GetAllCustomMenuSongsAsync().Any()) {
                     this.filePathPicker = new RandomObjectPicker<string>(GetAllCustomMenuSongsAsync().ToArray(), 0f);
                 }
                 else {
@@ -215,9 +208,7 @@ namespace CustomMenuMusic
             yield return new WaitUntil(() => this.filePathPicker != null || _overrideCustomSongsList);
 
             CurrentSongPath = GetNewSong();
-            if (!PluginConfig.Instance.UseCustomMenuSongs) {
-                this.tabViewController.CurrentSongPath = this.CurrentSongPath;
-            }
+            this.tabViewController.CurrentSongPath = PluginConfig.Instance.UseCustomMenuSongs ? "" : this.CurrentSongPath;
             Logger.Log("Loading file @ " + CurrentSongPath);
             var clipResponse = UnityWebRequestMultimedia.GetAudioClip(CurrentSongPath, AudioType.OGGVORBIS);
             yield return clipResponse.SendWebRequest();
@@ -271,14 +262,14 @@ namespace CustomMenuMusic
             try {
                 this.PreviewPlayer.gameObject.SetActive(true);
                 if (PluginConfig.Instance.Loop) {
-                    this.PreviewPlayer.CrossfadeTo(MenuMusic, 0f, -1, Volume);
+                    this.PreviewPlayer.CrossfadeTo(MenuMusic, 0f, -1, PluginConfig.Instance.MenuMusicVolume);
                 }
                 else {
                     if (startAtBeginning) {
-                        this.PreviewPlayer.CrossfadeTo(MenuMusic, 0f, MenuMusic.length, Volume);
+                        this.PreviewPlayer.CrossfadeTo(MenuMusic, 0f, MenuMusic.length, PluginConfig.Instance.MenuMusicVolume);
                     }
                     else {
-                        this.PreviewPlayer.CrossfadeTo(MenuMusic, UnityEngine.Random.Range(0.1f, MenuMusic.length / 2), MenuMusic.length, Volume);
+                        this.PreviewPlayer.CrossfadeTo(MenuMusic, UnityEngine.Random.Range(0.1f, MenuMusic.length / 2), MenuMusic.length, PluginConfig.Instance.MenuMusicVolume);
                     }
                 }
             }

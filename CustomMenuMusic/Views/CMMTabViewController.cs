@@ -61,7 +61,6 @@ namespace CustomMenuMusic.Views
                 Util.Logger.Log($"{Loader.CustomLevels.FirstOrDefault().Key}");
             }
         }
-
         public void Initialize()
         {
             GameplaySetup.instance.AddTab("Custom Menu Music", this.ResourceName, this);

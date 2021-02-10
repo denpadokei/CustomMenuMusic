@@ -16,22 +16,21 @@ namespace CustomMenuMusic.Harmony
         /// <summary>
         /// デフォルト曲が飛んで来たら差し替え。それ以外ならスルー
         /// </summary>
-        /// <param name="__instance"></param>
         /// <param name="audioClip"></param>
         /// <param name="startTime"></param>
         /// <param name="duration"></param>
         /// <param name="volumeScale"></param>
         /// <param name="____defaultAudioClip"></param>
+        /// <param name="__instance"></param>
         /// <returns></returns>
-        public static bool Prefix(SongPreviewPlayer __instance, ref AudioClip audioClip, ref float startTime, ref float duration, ref float volumeScale, ref AudioClip ____defaultAudioClip)
+        public static bool Prefix(ref AudioClip audioClip, ref float startTime, ref float duration, ref float volumeScale, ref AudioClip ____defaultAudioClip, SongPreviewPlayer __instance)
         {
             if (audioClip.GetInstanceID() == ____defaultAudioClip.GetInstanceID()) {
                 if (CustomMenuMusic.MenuMusic) {
                     audioClip = CustomMenuMusic.MenuMusic;
                 }
                 else {
-                    __instance.FadeOut();
-                    return false;
+                    return true;
                 }
             }
             if (!PluginConfig.Instance.Loop && duration < 0f) {
