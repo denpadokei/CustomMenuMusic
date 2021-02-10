@@ -22,7 +22,6 @@ namespace CustomMenuMusic.Configuration
         public virtual int NowPlayingLocation { get; set; }
         public virtual int NowPlayingColor { get; set; }
         public virtual bool CustomResultSound { get; set; } = false;
-
         /// <summary>
         /// This is called whenever BSIPA reads the config from disk (including when file changes are detected).
         /// </summary>
@@ -46,6 +45,13 @@ namespace CustomMenuMusic.Configuration
         public virtual void CopyFrom(PluginConfig other)
         {
             // This instance's members populated from other
+            this.UseCustomMenuSongs = other.UseCustomMenuSongs;
+            this.Loop = other.Loop;
+            this.MenuMusicVolume = other.MenuMusicVolume;
+            this.ShowNowPlaying = other.ShowNowPlaying;
+            this.NowPlayingLocation = other.NowPlayingLocation;
+            this.NowPlayingColor = other.NowPlayingColor;
+            this.CustomResultSound = other.CustomResultSound;
         }
     }
 }

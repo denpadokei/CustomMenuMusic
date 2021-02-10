@@ -47,7 +47,7 @@ namespace CustomMenuMusic
 
             if (isPath)
             {
-                if (new DirectoryInfo(Path.GetDirectoryName(newSong)).Name.Equals("CustomMenuSongs"))
+                if (new DirectoryInfo(Path.GetDirectoryName(newSong)).Name.Equals("MenuSongs"))
                     songName = Path.GetFileNameWithoutExtension(newSong);
                 else
                 {
