@@ -35,7 +35,7 @@ namespace CustomMenuMusic.Util
             _selectLevelCategoryViewController.LevelFilterCategoryIconSegmentedControlDidSelectCell(segcontrol, index);
         }
 
-        public IEnumerator ScrollToLevel(string levelID, Action<bool> callback, bool animated, bool isRetry = false)
+        public IEnumerator ScrollToLevel(string levelID, Action callback)
         {
             if (_levelCollectionViewController) {
                 yield return new WaitWhile(() => !Loader.AreSongsLoaded || Loader.AreSongsLoading);
@@ -54,7 +54,7 @@ namespace CustomMenuMusic.Util
                 _levelFilteringNavigationController.HandleAnnotatedBeatmapLevelCollectionsViewControllerDidSelectAnnotatedBeatmapLevelCollection(customSong);
 
 
-                var song = Loader.GetLevelByHash(levelID.Split('_').Last());
+                var song = Loader.GetLevelById(levelID);
                 if (song == null) {
                     yield break;
                 }
@@ -63,7 +63,7 @@ namespace CustomMenuMusic.Util
                 levelsTableView.SelectLevel(song);
 
             }
-            callback?.Invoke(false);
+            callback?.Invoke();
         }
 
 
