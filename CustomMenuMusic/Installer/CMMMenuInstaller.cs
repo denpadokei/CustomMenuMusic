@@ -14,11 +14,11 @@ namespace CustomMenuMusic.Installer
     {
         public override void InstallBindings()
         {
-            this.Container.BindInterfacesAndSelfTo<SongListUtility>().AsSingle();
-            this.Container.BindInterfacesAndSelfTo<CustomMenuMusic>().FromNewComponentOnNewGameObject(nameof(CustomMenuMusic)).AsSingle().NonLazy();
-            this.Container.BindInterfacesAndSelfTo<NowPlaying>().FromNewComponentOnNewGameObject(nameof(NowPlaying)).AsSingle();
-            this.Container.BindInterfacesAndSelfTo<CMMTabViewController>().FromNewComponentAsViewController().AsSingle().NonLazy();
-            this.Container.BindInterfacesAndSelfTo<ConfigViewController>().FromNewComponentAsViewController().AsSingle().NonLazy();
+            this.Container.BindInterfacesAndSelfTo<SongListUtility>().AsCached();
+            this.Container.BindInterfacesAndSelfTo<CustomMenuMusic>().FromNewComponentOnNewGameObject(nameof(CustomMenuMusic)).AsCached().NonLazy();
+            this.Container.BindInterfacesAndSelfTo<NowPlaying>().FromNewComponentOnNewGameObject(nameof(NowPlaying)).AsCached();
+            this.Container.BindInterfacesAndSelfTo<CMMTabViewController>().FromNewComponentAsViewController().AsCached().NonLazy();
+            this.Container.BindInterfacesAndSelfTo<ConfigViewController>().FromNewComponentAsViewController().AsCached().NonLazy();
         }
     }
 }
