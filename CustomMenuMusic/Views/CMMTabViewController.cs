@@ -63,7 +63,13 @@ namespace CustomMenuMusic.Views
         }
         public void Initialize()
         {
-            GameplaySetup.instance.AddTab("Custom Menu Music", this.ResourceName, this);
+            GameplaySetup.instance?.AddTab("Custom Menu Music", this.ResourceName, this);
+        }
+
+        protected override void OnDestroy()
+        {
+            GameplaySetup.instance?.RemoveTab("Custom Menu Music");
+            base.OnDestroy();
         }
 
         protected override void DidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling)
