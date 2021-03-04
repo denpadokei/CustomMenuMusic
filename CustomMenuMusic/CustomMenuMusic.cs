@@ -110,7 +110,7 @@ namespace CustomMenuMusic
             if (PluginConfig.Instance.Loop) {
                 return;
             }
-            if (this._isChangeing || this._isLoadingAudioClip || !this.PreviewPlayer) {
+            if (this._isChangeing || this._isLoadingAudioClip || this.PreviewPlayer.isActiveAndEnabled != true) {
                 return;
             }
             if (this.ActiveAudioSource?.isPlaying != true) {
