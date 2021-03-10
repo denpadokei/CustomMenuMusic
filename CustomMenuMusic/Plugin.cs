@@ -26,9 +26,9 @@ namespace CustomMenuMusic
         public void Init(IPA.Logging.Logger log, Config conf, Zenjector zenjector)
         {
             Instance = this;
-            Util.Logger.logger = log;
+            Logger.logger = log;
             Configuration.PluginConfig.Instance = conf.Generated<Configuration.PluginConfig>();
-            Util.Logger.logger.Debug("Config loaded");
+            Logger.logger.Debug("Config loaded");
             Harmony = new HarmonyLib.Harmony(HarmonyID);
             zenjector.OnMenu<CMMMenuInstaller>();
         }

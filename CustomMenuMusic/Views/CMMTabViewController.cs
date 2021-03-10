@@ -1,18 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
-using System.Linq;
-
-using BeatSaberMarkupLanguage;
-using BeatSaberMarkupLanguage.Attributes;
-using BeatSaberMarkupLanguage.Components;
+﻿using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.GameplaySetup;
 using BeatSaberMarkupLanguage.ViewControllers;
-using BS_Utils.Utilities;
 using CustomMenuMusic.Configuration;
 using CustomMenuMusic.Util;
 using SongCore;
+using System;
+using System.IO;
+using System.Linq;
 using Zenject;
 
 namespace CustomMenuMusic.Views
@@ -57,8 +51,8 @@ namespace CustomMenuMusic.Views
                 HMMainThreadDispatcher.instance.Enqueue(this.songListUtility.ScrollToLevel(song.levelID, null));
             }
             else {
-                Util.Logger.Log($"Notfind song : {this.CurrentSongPath}");
-                Util.Logger.Log($"{Loader.CustomLevels.FirstOrDefault().Key}");
+                Logger.Log($"Notfind song : {this.CurrentSongPath}");
+                Logger.Log($"{Loader.CustomLevels.FirstOrDefault().Key}");
             }
         }
         public void Initialize()

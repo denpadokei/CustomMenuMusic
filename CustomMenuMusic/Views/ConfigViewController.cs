@@ -27,14 +27,6 @@ namespace CustomMenuMusic.Views
             get => PluginConfig.Instance.Loop;
             set => PluginConfig.Instance.Loop = value;
         }
-
-        [UIValue("volume")]
-        public float MenuMusicVolume
-        {
-            get => PluginConfig.Instance.MenuMusicVolume;
-            set => PluginConfig.Instance.MenuMusicVolume = value;
-        }
-
         [UIValue("show-now-playing")]
         public bool ShowNowPlaying
         {
@@ -83,7 +75,7 @@ namespace CustomMenuMusic.Views
 
         internal void CreateSettingsUI()
         {
-            Util.Logger.Log("Creating Settings UI", Util.Logger.LogLevel.Debug);
+            Logger.Log("Creating Settings UI", Logger.LogLevel.Debug);
             BSMLSettings.instance.AddSettingsMenu("Custom Menu Music", "CustomMenuMusic.Resources.Settings.bsml", this);
         }
 

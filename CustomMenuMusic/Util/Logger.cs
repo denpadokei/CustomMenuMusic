@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Runtime.CompilerServices;
 
-namespace CustomMenuMusic.Util
+namespace CustomMenuMusic
 {
     static class Logger
     {

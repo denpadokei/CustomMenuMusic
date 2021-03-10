@@ -12,7 +12,6 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Zenject;
 using static CustomMenuMusic.Views.ConfigViewController;
-using Logger = CustomMenuMusic.Util.Logger;
 
 namespace CustomMenuMusic
 {
@@ -136,7 +135,7 @@ namespace CustomMenuMusic
             gameObj.SetActive(false);
 
             var textMesh = gameObj.AddComponent<CurvedTextMeshPro>();
-            textMesh.font = Instantiate(Resources.FindObjectsOfTypeAll<TMP_FontAsset>().First(t => t.name == "Teko-Medium SDF No Glow"));
+            textMesh.font = Instantiate(Resources.FindObjectsOfTypeAll<TMP_FontAsset>().First(t => t.name == "Teko-Medium SDF Numbers Monospaced Curved"));
             textMesh.rectTransform.SetParent(parent, false);
             textMesh.text = text;
             textMesh.fontSize = 4;

@@ -3,14 +3,15 @@ using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
 namespace CustomMenuMusic.Harmony
 {
-    [HarmonyPatch(typeof(SongPreviewPlayer), "CrossfadeTo",
-        new Type[] { typeof(AudioClip), typeof(float), typeof(float), typeof(float) })]
+    [HarmonyPatch(typeof(SongPreviewPlayer), nameof(SongPreviewPlayer.CrossfadeTo),
+        new Type[] { typeof(AudioClip), typeof(float), typeof(float), typeof(bool) })]
     public class SongPreviewPlayerCrossfadeToPatch
     {
         /// <summary>
@@ -23,7 +24,7 @@ namespace CustomMenuMusic.Harmony
         /// <param name="____defaultAudioClip"></param>
         /// <param name="__instance"></param>
         /// <returns></returns>
-        public static bool Prefix(ref AudioClip audioClip, ref float startTime, ref float duration, ref float volumeScale, ref AudioClip ____defaultAudioClip, SongPreviewPlayer __instance)
+        public static bool Prefix(ref AudioClip audioClip, ref float startTime, ref float duration, ref bool isDefault, ref AudioClip ____defaultAudioClip, SongPreviewPlayer __instance)
         {
             if (audioClip.GetInstanceID() == ____defaultAudioClip.GetInstanceID()) {
                 if (CustomMenuMusic.MenuMusic) {
@@ -44,10 +45,17 @@ namespace CustomMenuMusic.Harmony
         /// </summary>
         /// <param name="____activeChannel"></param>
         /// <param name="____audioSources"></param>
-        public static void Postfix(ref int ____activeChannel, ref AudioSource[] ____audioSources, ref bool ____transitionAfterDelay)
+        public static void Postfix(SongPreviewPlayer __instance, ref int ____activeChannel, ref bool ____transitionAfterDelay)
         {
-            if (!PluginConfig.Instance.Loop && ____audioSources[____activeChannel].clip.GetInstanceID() == CustomMenuMusic.MenuMusic.GetInstanceID()) {
-                ____audioSources[____activeChannel].loop = false;
+            if (CustomMenuMusic.MenuMusic == null) {
+                return;
+            }
+            var controllersObj = __instance.GetType().GetField("_audioSourceControllers", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(__instance);
+            var controllers = controllersObj as object[];
+            var source = controllers[____activeChannel].GetType().GetField("audioSource").GetValue(controllers[____activeChannel]);
+
+            if (!PluginConfig.Instance.Loop && ((AudioSource)source).clip.GetInstanceID() == CustomMenuMusic.MenuMusic.GetInstanceID()) {
+                ((AudioSource)source).loop = false;
                 ____transitionAfterDelay = false;
             }
         }

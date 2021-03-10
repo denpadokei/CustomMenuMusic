@@ -17,7 +17,6 @@ namespace CustomMenuMusic.Configuration
         
         public virtual bool UseCustomMenuSongs { get; set; }
         public virtual bool Loop { get; set; }
-        public virtual float MenuMusicVolume { get; set; } = 0.5f;
         public virtual bool ShowNowPlaying { get; set; } = true;
         public virtual int NowPlayingLocation { get; set; }
         public virtual int NowPlayingColor { get; set; }
@@ -47,7 +46,6 @@ namespace CustomMenuMusic.Configuration
             // This instance's members populated from other
             this.UseCustomMenuSongs = other.UseCustomMenuSongs;
             this.Loop = other.Loop;
-            this.MenuMusicVolume = other.MenuMusicVolume;
             this.ShowNowPlaying = other.ShowNowPlaying;
             this.NowPlayingLocation = other.NowPlayingLocation;
             this.NowPlayingColor = other.NowPlayingColor;
