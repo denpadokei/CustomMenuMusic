@@ -5,7 +5,6 @@ using IPA.Config.Stores;
 using SiraUtil.Zenject;
 using System;
 using System.Reflection;
-using UnityEngine.SceneManagement;
 
 namespace CustomMenuMusic
 {
@@ -17,7 +16,7 @@ namespace CustomMenuMusic
         public string Name => "Custom Menu Music";
         public string ID => "CustomMenuMusic";
         public string Version => Assembly.GetExecutingAssembly().GetName().Version.ToString();
-        private System.Random seedMaker = new System.Random(Environment.TickCount);
+        private readonly System.Random seedMaker = new System.Random(Environment.TickCount);
         public int Seed => this.seedMaker.Next();
 
         public const string HarmonyID = "CustomMenuMusic.denpadokei.com.github";
@@ -36,20 +35,14 @@ namespace CustomMenuMusic
         [OnStart]
         public void OnStart()
         {
-            
+
         }
 
         [OnEnable]
-        public void OnEnable()
-        {
-            Harmony.PatchAll(Assembly.GetExecutingAssembly());
-        }
+        public void OnEnable() => Harmony.PatchAll(Assembly.GetExecutingAssembly());
 
         [OnDisable]
-        public void OnDisable()
-        {
-            Harmony.UnpatchAll(HarmonyID);
-        }
+        public void OnDisable() => Harmony.UnpatchAll(HarmonyID);
 
         [OnExit]
         public void OnApplicationQuit()

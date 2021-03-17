@@ -9,7 +9,6 @@ using System.IO;
 using System.Linq;
 using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using Zenject;
 using static CustomMenuMusic.Views.ConfigViewController;
 
@@ -33,46 +32,41 @@ namespace CustomMenuMusic
         private static readonly string LabelText = "Now Playing - ";
 
         [Inject]
-        CMMTabViewController tabViewController;
+        private readonly CMMTabViewController tabViewController;
 
         public void SetCurrentSong(string newSong, bool isPath = true)
         {
-            if (newSong == null || newSong == string.Empty)
-            {
-                _nowPlayingText.text = String.Empty;
+            if (newSong == null || newSong == string.Empty) {
+                this._nowPlayingText.text = String.Empty;
                 if (PluginConfig.Instance.ShowNowPlaying) Logger.Log("newSong was invalid", Logger.LogLevel.Warning);
                 return;
             }
 
-            if (isPath)
-            {
+            if (isPath) {
                 if (new DirectoryInfo(Path.GetDirectoryName(newSong)).Name.Equals("MenuSongs"))
-                    songName = Path.GetFileNameWithoutExtension(newSong);
-                else
-                {
-                    try
-                    {
+                    this.songName = Path.GetFileNameWithoutExtension(newSong);
+                else {
+                    try {
                         var songDirectory = Path.GetDirectoryName(newSong);
                         var infoFileName = (File.Exists(Path.Combine(songDirectory, "info.json"))) ? "info.json" : "info.dat";
                         dynamic songInfo = JsonConvert.DeserializeObject(File.ReadAllText(Path.Combine(songDirectory, infoFileName)));
-                        songName = songInfo.songName ?? songInfo._songName;
-                        
+                        this.songName = songInfo.songName ?? songInfo._songName;
+
                     }
-                    catch (Exception e)
-                    {
+                    catch (Exception e) {
                         Logger.Log(e.StackTrace, Logger.LogLevel.Error);
-                        songName = Path.GetFileNameWithoutExtension(newSong);
+                        this.songName = Path.GetFileNameWithoutExtension(newSong);
                     }
                 }
             }
             else
-                songName = newSong;
+                this.songName = newSong;
 
-            if (songName != null || songName != string.Empty)
-                _nowPlayingText.text = $"{LabelText}{songName}";
+            if (this.songName != null || this.songName != string.Empty)
+                this._nowPlayingText.text = $"{LabelText}{this.songName}";
             else
-                _nowPlayingText.text = String.Empty;
-            tabViewController.SongName = this.songName;
+                this._nowPlayingText.text = String.Empty;
+            this.tabViewController.SongName = this.songName;
         }
 
         public void SetLocation(ConfigViewController.Location location)
@@ -80,8 +74,7 @@ namespace CustomMenuMusic
             Vector3 position;
             Vector3 rotation;
 
-            switch (location)
-            {
+            switch (location) {
                 case ConfigViewController.Location.LeftPanel:
                     position = LeftPosition;
                     rotation = LeftRotation;
@@ -99,35 +92,35 @@ namespace CustomMenuMusic
                     return;
             }
 
-            gameObject.transform.position = position;
-            gameObject.transform.eulerAngles = rotation;
-            gameObject.transform.localScale = scale;
+            this.gameObject.transform.position = position;
+            this.gameObject.transform.eulerAngles = rotation;
+            this.gameObject.transform.localScale = scale;
         }
 
         private void Awake()
         {
             Logger.Log("Awake call");
-            SetLocation((Location)PluginConfig.Instance.NowPlayingLocation);
+            this.SetLocation((Location)PluginConfig.Instance.NowPlayingLocation);
 
-            _canvas = gameObject.AddComponent<Canvas>();
-            _curvedCanvasSettings = gameObject.AddComponent<CurvedCanvasSettings>();
-            _canvas.renderMode = RenderMode.WorldSpace;
-            _canvas.enabled = false;
-            var rectTransform = _canvas.transform as RectTransform;
+            this._canvas = this.gameObject.AddComponent<Canvas>();
+            this._curvedCanvasSettings = this.gameObject.AddComponent<CurvedCanvasSettings>();
+            this._canvas.renderMode = RenderMode.WorldSpace;
+            this._canvas.enabled = false;
+            var rectTransform = this._canvas.transform as RectTransform;
             rectTransform.sizeDelta = CanvasSize;
 
-            _nowPlayingText = CreateText(_canvas.transform as RectTransform, String.Empty, new Vector2(10, 31));
-            rectTransform = _nowPlayingText.transform as RectTransform;
-            rectTransform.SetParent(_canvas.transform, false);
+            this._nowPlayingText = this.CreateText(this._canvas.transform as RectTransform, String.Empty, new Vector2(10, 31));
+            rectTransform = this._nowPlayingText.transform as RectTransform;
+            rectTransform.SetParent(this._canvas.transform, false);
             rectTransform.anchoredPosition = new Vector2(10, 31);
             rectTransform.sizeDelta = new Vector2(100, 20);
-            _nowPlayingText.text = String.Empty;
-            _nowPlayingText.fontSize = 14;
-            SetTextColor();
+            this._nowPlayingText.text = String.Empty;
+            this._nowPlayingText.fontSize = 14;
+            this.SetTextColor();
 
-            _canvas.enabled = true;
+            this._canvas.enabled = true;
         }
-        private CurvedTextMeshPro CreateText(RectTransform parent, string text, Vector2 anchoredPosition) => CreateText(parent, text, anchoredPosition, new Vector2(0, 0));
+        private CurvedTextMeshPro CreateText(RectTransform parent, string text, Vector2 anchoredPosition) => this.CreateText(parent, text, anchoredPosition, new Vector2(0, 0));
 
         private CurvedTextMeshPro CreateText(RectTransform parent, string text, Vector2 anchoredPosition, Vector2 sizeDelta)
         {
@@ -151,9 +144,9 @@ namespace CustomMenuMusic
             return textMesh;
         }
 
-        public void SetTextColor() => SetTextColor(PluginConfig.Instance.NowPlayingColor);
+        public void SetTextColor() => this.SetTextColor(PluginConfig.Instance.NowPlayingColor);
 
-        public void SetTextColor(int colorIndex) => _nowPlayingText.color = colors[colorIndex].Item1;
+        public void SetTextColor(int colorIndex) => this._nowPlayingText.color = colors[colorIndex].Item1;
 
         internal static readonly List<Tuple<Color, string>> colors = new List<Tuple<Color, string>>()
         {
@@ -180,7 +173,7 @@ namespace CustomMenuMusic
         };
     }
 
-    struct MyColors
+    internal struct MyColors
     {
         internal static Color KlouderBlue => new Color(0.349f, 0.69f, 0.957f, 1);
         internal static Color ElectricBlue => new Color(0, .98f, 2.157f);

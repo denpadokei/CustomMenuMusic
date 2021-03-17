@@ -1,10 +1,6 @@
 ﻿using IPA.Config.Stores;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 [assembly: InternalsVisibleTo(GeneratedStore.AssemblyVisibilityTarget)]
 namespace CustomMenuMusic.Configuration
@@ -14,7 +10,7 @@ namespace CustomMenuMusic.Configuration
         public static PluginConfig Instance { get; internal set; }
         public event Action<PluginConfig> OnSettingChanged;
 
-        
+
         public virtual bool UseCustomMenuSongs { get; set; }
         public virtual bool Loop { get; set; }
         public virtual bool ShowNowPlaying { get; set; } = true;
@@ -32,11 +28,9 @@ namespace CustomMenuMusic.Configuration
         /// <summary>
         /// Call this to force BSIPA to update the config file. This is also called by BSIPA if it detects the file was modified.
         /// </summary>
-        public virtual void Changed()
-        {
+        public virtual void Changed() =>
             // Do stuff when the config is changed.
             this.OnSettingChanged?.Invoke(this);
-        }
 
         /// <summary>
         /// Call this to have BSIPA copy the values from <paramref name="other"/> into this config.

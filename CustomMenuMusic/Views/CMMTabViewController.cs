@@ -15,7 +15,7 @@ namespace CustomMenuMusic.Views
     public class CMMTabViewController : BSMLAutomaticViewController, IInitializable
     {
         // For this method of setting the ResourceName, this class must be the first class in the file.
-        public string ResourceName => string.Join(".", GetType().Namespace, GetType().Name);
+        public string ResourceName => string.Join(".", this.GetType().Namespace, this.GetType().Name);
         public string CurrentSongPath { get; set; } = "";
 
         private string _songName;
@@ -41,7 +41,7 @@ namespace CustomMenuMusic.Views
             }
         }
         [UIAction("play-now-play")]
-        void PlayClick()
+        private void PlayClick()
         {
             if (PluginConfig.Instance.UseCustomMenuSongs) {
                 return;
@@ -55,10 +55,7 @@ namespace CustomMenuMusic.Views
                 Logger.Log($"{Loader.CustomLevels.FirstOrDefault().Key}");
             }
         }
-        public void Initialize()
-        {
-            GameplaySetup.instance?.AddTab("Custom Menu Music", this.ResourceName, this);
-        }
+        public void Initialize() => GameplaySetup.instance?.AddTab("Custom Menu Music", this.ResourceName, this);
 
         protected override void OnDestroy()
         {

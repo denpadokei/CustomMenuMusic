@@ -2,9 +2,7 @@
 using BeatSaberMarkupLanguage.Settings;
 using BeatSaberMarkupLanguage.ViewControllers;
 using CustomMenuMusic.Configuration;
-using CustomMenuMusic.Interfaces;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -79,12 +77,9 @@ namespace CustomMenuMusic.Views
             BSMLSettings.instance.AddSettingsMenu("Custom Menu Music", "CustomMenuMusic.Resources.Settings.bsml", this);
         }
 
-        public void Initialize()
-        {
-            this.CreateSettingsUI();
-        }
+        public void Initialize() => this.CreateSettingsUI();
 
-        static readonly List<String> locationNames = new List<string> { "Left Panel", "Center Panel", "Right Panel" };
+        private static readonly List<String> locationNames = new List<string> { "Left Panel", "Center Panel", "Right Panel" };
 
         public enum Location
         {

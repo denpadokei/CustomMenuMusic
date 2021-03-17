@@ -6,8 +6,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using Zenject;
 
@@ -23,35 +21,35 @@ namespace CustomMenuMusic.Util
         [Inject]
         public void Constractor(DiContainer container)
         {
-            _levelCollectionViewController = container.Resolve<LevelCollectionViewController>();
-            _levelFilteringNavigationController = container.Resolve<LevelFilteringNavigationController>();
-            _annotatedBeatmapLevelCollectionsViewController = container.Resolve<AnnotatedBeatmapLevelCollectionsViewController>();
-            _selectLevelCategoryViewController = container.Resolve<SelectLevelCategoryViewController>();
+            this._levelCollectionViewController = container.Resolve<LevelCollectionViewController>();
+            this._levelFilteringNavigationController = container.Resolve<LevelFilteringNavigationController>();
+            this._annotatedBeatmapLevelCollectionsViewController = container.Resolve<AnnotatedBeatmapLevelCollectionsViewController>();
+            this._selectLevelCategoryViewController = container.Resolve<SelectLevelCategoryViewController>();
         }
         private void SelectCustomSongPack(int index)
         {
-            var segcontrol = _selectLevelCategoryViewController.GetField<IconSegmentedControl, SelectLevelCategoryViewController>("_levelFilterCategoryIconSegmentedControl");
+            var segcontrol = this._selectLevelCategoryViewController.GetField<IconSegmentedControl, SelectLevelCategoryViewController>("_levelFilterCategoryIconSegmentedControl");
             segcontrol.SelectCellWithNumber(index);
-            _selectLevelCategoryViewController.LevelFilterCategoryIconSegmentedControlDidSelectCell(segcontrol, index);
+            this._selectLevelCategoryViewController.LevelFilterCategoryIconSegmentedControlDidSelectCell(segcontrol, index);
         }
 
         public IEnumerator ScrollToLevel(string levelID, Action callback)
         {
-            if (_levelCollectionViewController) {
+            if (this._levelCollectionViewController) {
                 yield return new WaitWhile(() => !Loader.AreSongsLoaded || Loader.AreSongsLoading);
 
                 // handle if song browser is present
                 if (PluginManager.GetPlugin("SongBrowser") != null) {
-                    SongBrowserCancelFilter();
+                    this.SongBrowserCancelFilter();
                 }
 
                 // Make sure our custom songpack is selected
-                SelectCustomSongPack(2);
-                _levelFilteringNavigationController.UpdateCustomSongs();
-                var tableView = _annotatedBeatmapLevelCollectionsViewController.GetField<AnnotatedBeatmapLevelCollectionsTableView, AnnotatedBeatmapLevelCollectionsViewController>("_annotatedBeatmapLevelCollectionsTableView");
+                this.SelectCustomSongPack(2);
+                this._levelFilteringNavigationController.UpdateCustomSongs();
+                var tableView = this._annotatedBeatmapLevelCollectionsViewController.GetField<AnnotatedBeatmapLevelCollectionsTableView, AnnotatedBeatmapLevelCollectionsViewController>("_annotatedBeatmapLevelCollectionsTableView");
                 tableView.SelectAndScrollToCellWithIdx(0);
                 var customSong = tableView.GetField<IReadOnlyList<IAnnotatedBeatmapLevelCollection>, AnnotatedBeatmapLevelCollectionsTableView>("_annotatedBeatmapLevelCollections").FirstOrDefault();
-                _levelFilteringNavigationController.HandleAnnotatedBeatmapLevelCollectionsViewControllerDidSelectAnnotatedBeatmapLevelCollection(customSong);
+                this._levelFilteringNavigationController.HandleAnnotatedBeatmapLevelCollectionsViewControllerDidSelectAnnotatedBeatmapLevelCollection(customSong);
 
 
                 var song = Loader.GetLevelById(levelID);
@@ -59,7 +57,7 @@ namespace CustomMenuMusic.Util
                     yield break;
                 }
                 // get the table view
-                var levelsTableView = _levelCollectionViewController.GetField<LevelCollectionTableView, LevelCollectionViewController>("_levelCollectionTableView");
+                var levelsTableView = this._levelCollectionViewController.GetField<LevelCollectionTableView, LevelCollectionViewController>("_levelCollectionTableView");
                 levelsTableView.SelectLevel(song);
 
             }

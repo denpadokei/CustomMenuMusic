@@ -26,14 +26,15 @@ namespace CustomMenuMusic
         private string _currentSceneName = "MenuCore";
         private RandomObjectPicker<string> filePathPicker;
         public static AudioClip MenuMusic { get; set; }
-        public int ActiveChannel => PreviewPlayer.GetField<int, SongPreviewPlayer>("_activeChannel");
+        public static bool IsPause { get; internal set; }
+        public int ActiveChannel => this.PreviewPlayer.GetField<int, SongPreviewPlayer>("_activeChannel");
         public AudioSource ActiveAudioSource
         {
             get
             {
                 try {
-                    if (this.AudioSources?.Count() > (uint)this.ActiveChannel) {
-                        return this.AudioSources?.ElementAt(this.ActiveChannel);
+                    if (this.AudioSources?.Length > (uint)this.ActiveChannel) {
+                        return this.AudioSources[this.ActiveChannel].audioSource;
                     }
                     else {
                         return null;
@@ -45,34 +46,24 @@ namespace CustomMenuMusic
                 }
             }
         }
-        public IEnumerable<AudioSource> AudioSources
+        public SongPreviewPlayer.AudioSourceVolumeController[] AudioSources
         {
             get
             {
-                if (this.PreviewPlayer == null) {
-                    yield break;
+                if (!this.PreviewPlayer) {
+                    return null;
                 }
-                var audioControllers = this._audioSouces.GetValue(this.PreviewPlayer);
-                if (audioControllers is object[] array) {
-                    foreach (var audioSouces in array) {
-                        var audiocontroll = audioSouces.GetType().GetField("audioSource").GetValue(audioSouces);
-                        yield return (AudioSource)audiocontroll;
-                    }
-                }
-                else {
-                    yield break;
-                }
+                return this.PreviewPlayer.GetField<SongPreviewPlayer.AudioSourceVolumeController[], SongPreviewPlayer>("_audioSourceControllers");
             }
         }
-        private FieldInfo _audioSouces => this.PreviewPlayer?.GetType().GetField("_audioSourceControllers", BindingFlags.NonPublic | BindingFlags.Instance);
         [Inject]
-        INowPlayable nowPlay;
+        private readonly INowPlayable nowPlay;
         [Inject]
-        CMMTabViewController tabViewController;
+        private readonly CMMTabViewController tabViewController;
         [Inject]
-        SongPreviewPlayer PreviewPlayer { get; }
+        private SongPreviewPlayer PreviewPlayer { get; }
         [Inject]
-        ResultsViewController ResultsViewController { get; }
+        private ResultsViewController ResultsViewController { get; }
 
         private WaitWhile waitWhileMenuMusic;
         private WaitWhile waitWhileLoading;
@@ -84,10 +75,7 @@ namespace CustomMenuMusic
         private static readonly string UserDataPath = Path.Combine(Environment.CurrentDirectory, "UserData", "CustomMenuMusic");
         private static readonly string MenuSongsPath = "MenuSongs";
         private static readonly string ResultSongsPath = "ResultSound";
-        private void SceneManager_activeSceneChanged(Scene arg0, Scene arg1)
-        {
-            this._currentSceneName = arg1.name;
-        }
+        private void SceneManager_activeSceneChanged(Scene arg0, Scene arg1) => this._currentSceneName = arg1.name;
         #region Unity Message
         private async void Awake()
         {
@@ -96,18 +84,18 @@ namespace CustomMenuMusic
             this.waitWhileMenuMusic = new WaitWhile(() => MenuMusic == null || !MenuMusic);
             this.waitWhileLoading = new WaitWhile(() => this._isLoadingAudioClip);
             this._sceneDidTransition = true;
-            SceneManager.activeSceneChanged += SceneManager_activeSceneChanged;
+            SceneManager.activeSceneChanged += this.SceneManager_activeSceneChanged;
             BSEvents.menuSceneActive += this.BSEvents_menuSceneActive;
-            
+
             if (!Directory.Exists(UserDataPath))
                 Directory.CreateDirectory(UserDataPath);
             HMMainThreadDispatcher.instance.Enqueue(this.SetResultSong());
-            await GetSongsListAsync();
+            await this.GetSongsListAsync();
             this.Restart();
         }
         private void OnDestroy()
         {
-            SceneManager.activeSceneChanged -= SceneManager_activeSceneChanged;
+            SceneManager.activeSceneChanged -= this.SceneManager_activeSceneChanged;
             BSEvents.menuSceneActive -= this.BSEvents_menuSceneActive;
         }
         private void Update()
@@ -122,7 +110,7 @@ namespace CustomMenuMusic
             if (PluginConfig.Instance.Loop) {
                 return;
             }
-            if (this._isChangeing || this._isLoadingAudioClip || this.PreviewPlayer.isActiveAndEnabled != true) {
+            if (IsPause || this._isChangeing || this._isLoadingAudioClip || this.PreviewPlayer.isActiveAndEnabled != true) {
                 return;
             }
             if (this.ActiveAudioSource?.isPlaying != true) {
@@ -133,38 +121,26 @@ namespace CustomMenuMusic
         /// <summary>
         /// よくわかんないけど残してる処理
         /// </summary>
-        private void BSEvents_menuSceneActive()
-        {
-            this._sceneDidTransition = true;
-        }
-        public Task GetSongsListAsync() => GetSongsListAsync(PluginConfig.Instance.UseCustomMenuSongs);
+        private void BSEvents_menuSceneActive() => this._sceneDidTransition = true;
+        public Task GetSongsListAsync() => this.GetSongsListAsync(PluginConfig.Instance.UseCustomMenuSongs);
 
-        public Task GetSongsListAsync(bool useCustomMenuSongs)
-        {
-            return Task.Run(() =>
-            {
-                if (!Directory.Exists(Path.Combine(UserDataPath, MenuSongsPath))) {
-                    Directory.CreateDirectory(Path.Combine(UserDataPath, MenuSongsPath));
-                }
-                if (useCustomMenuSongs && GetAllCustomMenuSongsAsync().Any()) {
-                    this.filePathPicker = new RandomObjectPicker<string>(GetAllCustomMenuSongsAsync().ToArray(), 0f);
-                }
-                else {
-                    this.filePathPicker = new RandomObjectPicker<string>(GetAllCustomSongsAsync().ToArray(), 0f);
-                }
-                _overrideCustomSongsList = !filePathPicker.GetField<string[], RandomObjectPicker<string>>("_objects").Any();
-            });
-        }
+        public Task GetSongsListAsync(bool useCustomMenuSongs) => Task.Run(() =>
+                                                                            {
+                                                                                if (!Directory.Exists(Path.Combine(UserDataPath, MenuSongsPath))) {
+                                                                                    Directory.CreateDirectory(Path.Combine(UserDataPath, MenuSongsPath));
+                                                                                }
+                                                                                if (useCustomMenuSongs && this.GetAllCustomMenuSongsAsync().Any()) {
+                                                                                    this.filePathPicker = new RandomObjectPicker<string>(this.GetAllCustomMenuSongsAsync().ToArray(), 0f);
+                                                                                }
+                                                                                else {
+                                                                                    this.filePathPicker = new RandomObjectPicker<string>(this.GetAllCustomSongsAsync().ToArray(), 0f);
+                                                                                }
+                                                                                this._overrideCustomSongsList = !this.filePathPicker.GetField<string[], RandomObjectPicker<string>>("_objects").Any();
+                                                                            });
 
-        private IEnumerable<string> GetAllCustomMenuSongsAsync()
-        {
-            return Directory.EnumerateFiles(Path.Combine(UserDataPath, MenuSongsPath), "*.ogg", SearchOption.AllDirectories);
-        }
+        private IEnumerable<string> GetAllCustomMenuSongsAsync() => Directory.EnumerateFiles(Path.Combine(UserDataPath, MenuSongsPath), "*.ogg", SearchOption.AllDirectories);
 
-        private IEnumerable<string> GetAllCustomSongsAsync()
-        {
-            return DirSearch(CustomSongsPath);
-        }
+        private IEnumerable<string> GetAllCustomSongsAsync() => this.DirSearch(CustomSongsPath);
 
         private string GetResultSongPath()
         {
@@ -195,10 +171,7 @@ namespace CustomMenuMusic
             }
         }
 
-        private IEnumerable<string> DirSearch(string sDir)
-        {
-            return Directory.EnumerateFiles(sDir, "*.egg", SearchOption.AllDirectories);
-        }
+        private IEnumerable<string> DirSearch(string sDir) => Directory.EnumerateFiles(sDir, "*.egg", SearchOption.AllDirectories);
 
         private string GetNewSong()
         {
@@ -208,18 +181,18 @@ namespace CustomMenuMusic
 
         private IEnumerator LoadAudioClip()
         {
-            if (_isLoadingAudioClip) yield break;
-            _isLoadingAudioClip = true;
-            yield return new WaitUntil(() => this.filePathPicker != null || _overrideCustomSongsList);
+            if (this._isLoadingAudioClip) yield break;
+            this._isLoadingAudioClip = true;
+            yield return new WaitUntil(() => this.filePathPicker != null || this._overrideCustomSongsList);
 
-            CurrentSongPath = GetNewSong();
+            this.CurrentSongPath = this.GetNewSong();
             this.tabViewController.CurrentSongPath = PluginConfig.Instance.UseCustomMenuSongs ? "" : this.CurrentSongPath;
-            Logger.Log("Loading file @ " + CurrentSongPath);
-            var clipResponse = UnityWebRequestMultimedia.GetAudioClip(CurrentSongPath, AudioType.OGGVORBIS);
+            Logger.Log("Loading file @ " + this.CurrentSongPath);
+            var clipResponse = UnityWebRequestMultimedia.GetAudioClip(this.CurrentSongPath, AudioType.OGGVORBIS);
             yield return clipResponse.SendWebRequest();
             if (clipResponse.error != null) {
                 Logger.Log($"Unity Web Request Failed! Error: {clipResponse.error}", Logger.LogLevel.Error);
-                _isLoadingAudioClip = false;
+                this._isLoadingAudioClip = false;
                 yield break;
             }
             else {
@@ -228,16 +201,16 @@ namespace CustomMenuMusic
                     MenuMusic = null;
                 }
                 MenuMusic = DownloadHandlerAudioClip.GetContent(clipResponse);
-                MenuMusic.name = Path.GetFileName(CurrentSongPath);
+                MenuMusic.name = Path.GetFileName(this.CurrentSongPath);
             }
             yield return this.waitWhileMenuMusic;
-            if (_overrideCustomSongsList) {
+            if (this._overrideCustomSongsList) {
                 this.nowPlay.SetCurrentSong(System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(MenuMusic.name), false);
             }
             else if (PluginConfig.Instance.ShowNowPlaying) {
-                this.nowPlay.SetCurrentSong(CurrentSongPath);
+                this.nowPlay.SetCurrentSong(this.CurrentSongPath);
             }
-            _isLoadingAudioClip = false;
+            this._isLoadingAudioClip = false;
         }
 
         private void Restart()
@@ -253,17 +226,14 @@ namespace CustomMenuMusic
             HMMainThreadDispatcher.instance.Enqueue(this.StartAudioSource(true));
         }
 
-        private void StopActiveAudioSource()
-        {
-            this.PreviewPlayer.gameObject.SetActive(false);
-        }
+        private void StopActiveAudioSource() => this.PreviewPlayer.gameObject.SetActive(false);
         private IEnumerator StartAudioSource(bool startAtBeginning = false)
         {
             if (this._isChangeing || !this.PreviewPlayer) {
                 yield break;
             }
             this._isChangeing = true;
-            yield return waitWhileLoading;
+            yield return this.waitWhileLoading;
             try {
                 this.PreviewPlayer.gameObject.SetActive(true);
                 if (PluginConfig.Instance.Loop) {
