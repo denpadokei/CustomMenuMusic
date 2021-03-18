@@ -19,11 +19,9 @@ namespace CustomMenuMusic
 {
     public class CustomMenuMusic : MonoBehaviour, ICustomMenuMusicable
     {
-        private volatile bool _sceneDidTransition = false;
         private volatile bool _isLoadingAudioClip = false;
         private volatile bool _isChangeing = false;
         private bool _overrideCustomSongsList = false;
-        private string _currentSceneName = "MenuCore";
         private RandomObjectPicker<string> filePathPicker;
         public static AudioClip MenuMusic { get; set; }
         public static bool IsPause { get; internal set; }
@@ -69,13 +67,10 @@ namespace CustomMenuMusic
         private WaitWhile waitWhileLoading;
 
         public string CurrentSongPath { get; private set; }
-        private const string builtInSongsFolder = "CustomMenuMusic.BuiltInSongs";
-
         private static readonly string CustomSongsPath = Path.Combine(Environment.CurrentDirectory, "Beat Saber_Data", "CustomLevels");
         private static readonly string UserDataPath = Path.Combine(Environment.CurrentDirectory, "UserData", "CustomMenuMusic");
         private static readonly string MenuSongsPath = "MenuSongs";
         private static readonly string ResultSongsPath = "ResultSound";
-        private void SceneManager_activeSceneChanged(Scene arg0, Scene arg1) => this._currentSceneName = arg1.name;
         #region Unity Message
         private async void Awake()
         {
@@ -83,21 +78,14 @@ namespace CustomMenuMusic
 
             this.waitWhileMenuMusic = new WaitWhile(() => MenuMusic == null || !MenuMusic);
             this.waitWhileLoading = new WaitWhile(() => this._isLoadingAudioClip);
-            this._sceneDidTransition = true;
-            SceneManager.activeSceneChanged += this.SceneManager_activeSceneChanged;
-            BSEvents.menuSceneActive += this.BSEvents_menuSceneActive;
-
-            if (!Directory.Exists(UserDataPath))
+            if (!Directory.Exists(UserDataPath)) {
                 Directory.CreateDirectory(UserDataPath);
+            }   
             HMMainThreadDispatcher.instance.Enqueue(this.SetResultSong());
             await this.GetSongsListAsync();
             this.Restart();
         }
-        private void OnDestroy()
-        {
-            SceneManager.activeSceneChanged -= this.SceneManager_activeSceneChanged;
-            BSEvents.menuSceneActive -= this.BSEvents_menuSceneActive;
-        }
+
         private void Update()
         {
             if (Input.GetKeyDown(KeyCode.Period)) {
@@ -118,10 +106,6 @@ namespace CustomMenuMusic
             }
         }
         #endregion
-        /// <summary>
-        /// よくわかんないけど残してる処理
-        /// </summary>
-        private void BSEvents_menuSceneActive() => this._sceneDidTransition = true;
         public Task GetSongsListAsync() => this.GetSongsListAsync(PluginConfig.Instance.UseCustomMenuSongs);
 
         public Task GetSongsListAsync(bool useCustomMenuSongs) => Task.Run(() =>
