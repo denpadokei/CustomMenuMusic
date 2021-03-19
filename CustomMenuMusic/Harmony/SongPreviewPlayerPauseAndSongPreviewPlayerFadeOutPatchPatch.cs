@@ -6,12 +6,12 @@ namespace CustomMenuMusic.Harmony
     [HarmonyPatch(typeof(SongPreviewPlayer), nameof(SongPreviewPlayer.PauseCurrentChannel))]
     public class SongPreviewPlayerPausePatch
     {
-        public static void PostFix() => CustomMenuMusic.IsPause = true;
+        public static void Postfix() => CustomMenuMusic.IsPauseOrFadeOut = true;
     }
 
     [HarmonyPatch(typeof(SongPreviewPlayer), nameof(SongPreviewPlayer.FadeOut), new Type[] { typeof(float) })]
     public class SongPreviewPlayerFadeOutPatch
     {
-        public static void PostFix() => CustomMenuMusic.IsPause = false;
+        public static void Postfix() => CustomMenuMusic.IsPauseOrFadeOut = true;
     }
 }

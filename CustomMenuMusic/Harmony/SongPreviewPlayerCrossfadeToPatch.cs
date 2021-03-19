@@ -1,6 +1,7 @@
 ﻿using CustomMenuMusic.Configuration;
 using HarmonyLib;
 using System;
+using System.Reflection;
 using UnityEngine;
 
 namespace CustomMenuMusic.Harmony
@@ -16,22 +17,23 @@ namespace CustomMenuMusic.Harmony
         /// <param name="startTime"></param>
         /// <param name="duration"></param>
         /// <returns></returns>
-        public static void Prefix(ref AudioClip audioClip, ref float startTime, ref float duration, ref bool isDefault, out bool __isDefault)
+        public static void Prefix(ref AudioClip audioClip, ref float startTime, ref float duration, ref bool isDefault, out bool __state)
         {
             if (isDefault && CustomMenuMusic.MenuMusic) {
                 audioClip = CustomMenuMusic.MenuMusic;
+                startTime = Mathf.Max(UnityEngine.Random.Range(0f, (CustomMenuMusic.MenuMusic.length - 0.1f) / 2), 0f);
             }
-            __isDefault = isDefault;
+            __state = isDefault;
         }
 
         /// <summary>
         /// ループが取れません！
         /// </summary>
         /// <param name="____activeChannel"></param>
-        public static void Postfix(ref int ____activeChannel, ref bool ____transitionAfterDelay, ref SongPreviewPlayer.AudioSourceVolumeController[] ____audioSourceControllers, bool __isDefault)
+        public static void Postfix(ref int ____activeChannel, ref bool ____transitionAfterDelay, ref SongPreviewPlayer.AudioSourceVolumeController[] ____audioSourceControllers, bool __state)
         {
-            CustomMenuMusic.IsPause = false;
-            if (!__isDefault || !CustomMenuMusic.MenuMusic) {
+            CustomMenuMusic.IsPauseOrFadeOut = false;
+            if (!__state || !CustomMenuMusic.MenuMusic) {
                 return;
             }
             var source = ____audioSourceControllers[____activeChannel]?.audioSource;

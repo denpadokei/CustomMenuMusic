@@ -24,7 +24,7 @@ namespace CustomMenuMusic
         private bool _overrideCustomSongsList = false;
         private RandomObjectPicker<string> filePathPicker;
         public static AudioClip MenuMusic { get; set; }
-        public static bool IsPause { get; internal set; }
+        public static bool IsPauseOrFadeOut { get; internal set; } = true;
         public int ActiveChannel => this.PreviewPlayer.GetField<int, SongPreviewPlayer>("_activeChannel");
         public AudioSource ActiveAudioSource
         {
@@ -72,6 +72,11 @@ namespace CustomMenuMusic
         private static readonly string MenuSongsPath = "MenuSongs";
         private static readonly string ResultSongsPath = "ResultSound";
         #region Unity Message
+        private void OnDisable()
+        {
+            HMMainThreadDispatcher.instance.Enqueue(this.LoadAudioClip());
+        }
+
         private async void Awake()
         {
             Logger.Log("Awake call");
@@ -81,8 +86,12 @@ namespace CustomMenuMusic
             if (!Directory.Exists(UserDataPath)) {
                 Directory.CreateDirectory(UserDataPath);
             }   
-            HMMainThreadDispatcher.instance.Enqueue(this.SetResultSong());
             await this.GetSongsListAsync();
+        }
+
+        private void Start()
+        {
+            HMMainThreadDispatcher.instance.Enqueue(this.SetResultSong());
             this.Restart();
         }
 
@@ -98,7 +107,7 @@ namespace CustomMenuMusic
             if (PluginConfig.Instance.Loop) {
                 return;
             }
-            if (IsPause || this._isChangeing || this._isLoadingAudioClip || this.PreviewPlayer.isActiveAndEnabled != true) {
+            if (IsPauseOrFadeOut || this._isChangeing || this._isLoadingAudioClip || this.PreviewPlayer.isActiveAndEnabled != true) {
                 return;
             }
             if (this.ActiveAudioSource?.isPlaying != true) {
@@ -207,11 +216,11 @@ namespace CustomMenuMusic
         private void Next()
         {
             HMMainThreadDispatcher.instance.Enqueue(this.LoadAudioClip());
-            HMMainThreadDispatcher.instance.Enqueue(this.StartAudioSource(true));
+            HMMainThreadDispatcher.instance.Enqueue(this.StartAudioSource());
         }
 
         private void StopActiveAudioSource() => this.PreviewPlayer.gameObject.SetActive(false);
-        private IEnumerator StartAudioSource(bool startAtBeginning = false)
+        private IEnumerator StartAudioSource()
         {
             if (this._isChangeing || !this.PreviewPlayer) {
                 yield break;
@@ -219,17 +228,9 @@ namespace CustomMenuMusic
             this._isChangeing = true;
             yield return this.waitWhileLoading;
             try {
-                this.PreviewPlayer.gameObject.SetActive(true);
-                if (PluginConfig.Instance.Loop) {
-                    this.PreviewPlayer.CrossfadeTo(MenuMusic, 0f, -1, true);
-                }
-                else {
-                    if (startAtBeginning) {
-                        this.PreviewPlayer.CrossfadeTo(MenuMusic, 0f, MenuMusic.length, true);
-                    }
-                    else {
-                        this.PreviewPlayer.CrossfadeTo(MenuMusic, UnityEngine.Random.Range(0.1f, MenuMusic.length / 2), MenuMusic.length, true);
-                    }
+                if (this.PreviewPlayer) {
+                    this.PreviewPlayer.gameObject.SetActive(true);
+                    this.PreviewPlayer.CrossFadeToDefault();
                 }
             }
             catch (Exception ex) {
