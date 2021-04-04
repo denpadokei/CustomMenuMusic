@@ -37,6 +37,7 @@
     <Compile Include="Configuration\PluginConfig.cs" />
     <Compile Include="Harmony\SongPreviewPlayerCrossfadeToPatch.cs" />
     <Compile Include="Harmony\SongPreviewPlayerPauseAndSongPreviewPlayerFadeOutPatchPatch.cs" />
+    <Compile Include="Harmony\SongPreviewPlayerPauseOnInputFocusLost.cs" />
     <Compile Include="Harmony\SongPreviewPlayerUnPausePatch.cs" />
     <Compile Include="Views\ConfigViewController.cs" />
     <Compile Include="CustomMenuMusic.cs" />
@@ -173,7 +174,7 @@
     <None Include="BuiltInSongs\despacito.ogg" />
     <EmbeddedResource Include="manifest.json" />
     <EmbeddedResource Include="Resources\ABOUT.md" />
-    <EmbeddedResource Include="Resources\Settings.bsml" />
+    <EmbeddedResource Include="Views\Settings.bsml" />
     <EmbeddedResource Include="Views\TabViewController.bsml">
       <DependentUpon>CMMTabViewController.cs</DependentUpon>
     </EmbeddedResource>

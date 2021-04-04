@@ -52,7 +52,12 @@ namespace CustomMenuMusic.Views
             get => PluginConfig.Instance.CustomResultSound;
             set => PluginConfig.Instance.CustomResultSound = value;
         }
-
+        [UIValue("global-active-sound")]
+        public bool GrobalActiveSound
+        {
+            get => PluginConfig.Instance.GrobalActiveSound;
+            set => PluginConfig.Instance.GrobalActiveSound = value;
+        }
         [UIValue("volume-range")]
         public List<object> VolumeRange => Enumerable.Range(0, 21).Select(x => x * 0.05f).Cast<object>().ToList();
 
@@ -74,7 +79,7 @@ namespace CustomMenuMusic.Views
         internal void CreateSettingsUI()
         {
             Logger.Log("Creating Settings UI", Logger.LogLevel.Debug);
-            BSMLSettings.instance.AddSettingsMenu("Custom Menu Music", "CustomMenuMusic.Resources.Settings.bsml", this);
+            BSMLSettings.instance.AddSettingsMenu("Custom Menu Music", "CustomMenuMusic.Views.Settings.bsml", this);
         }
 
         public void Initialize() => this.CreateSettingsUI();

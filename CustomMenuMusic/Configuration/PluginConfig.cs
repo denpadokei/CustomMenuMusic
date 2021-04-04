@@ -17,6 +17,7 @@ namespace CustomMenuMusic.Configuration
         public virtual int NowPlayingLocation { get; set; }
         public virtual int NowPlayingColor { get; set; }
         public virtual bool CustomResultSound { get; set; } = false;
+        public virtual bool GrobalActiveSound { get; set; } = true;
         /// <summary>
         /// This is called whenever BSIPA reads the config from disk (including when file changes are detected).
         /// </summary>
