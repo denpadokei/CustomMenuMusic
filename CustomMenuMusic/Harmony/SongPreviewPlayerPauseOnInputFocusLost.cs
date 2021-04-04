@@ -11,9 +11,9 @@ namespace CustomMenuMusic.Harmony
     [HarmonyPatch(typeof(SongPreviewPlayerPauseOnInputFocusLost), nameof(SongPreviewPlayerPauseOnInputFocusLost.HandleInputFocusCaptured))]
     public class SongPreviewPlayerPauseOnInputFocusLostHandleInputFocusCapturedPatch
     {
-        public static bool Postfix()
+        public static bool Prefix()
         {
-            return PluginConfig.Instance.GrobalActiveSound;
+            return !PluginConfig.Instance.GrobalActiveSound;
         }
     }
 }
