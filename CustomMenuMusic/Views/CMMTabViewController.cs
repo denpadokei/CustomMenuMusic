@@ -22,12 +22,14 @@ namespace CustomMenuMusic.Views
 
         private SongListUtility songListUtility;
         private CustomMenuMusic _customMenuMusic;
+        private SongPreviewPlayer _songPreviewPlayer;
 
         [Inject]
-        public void Constractor(SongListUtility util, CustomMenuMusic customMenuMusic)
+        public void Constractor(SongListUtility util, CustomMenuMusic customMenuMusic, SongPreviewPlayer player)
         {
             this.songListUtility = util;
             this._customMenuMusic = customMenuMusic;
+            this._songPreviewPlayer = player;
         }
 
         [UIValue("song-name")]
@@ -55,6 +57,13 @@ namespace CustomMenuMusic.Views
                 Logger.Log($"{Loader.CustomLevels.FirstOrDefault().Key}");
             }
         }
+        [UIAction("skip")]
+        private void Skip()
+        {
+            this._songPreviewPlayer.FadeOut(0);
+            this._customMenuMusic.Next();
+        }
+
         public void Initialize() => GameplaySetup.instance?.AddTab("Custom Menu Music", this.ResourceName, this);
 
         protected override void OnDestroy()

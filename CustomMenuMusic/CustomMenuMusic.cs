@@ -24,6 +24,7 @@ namespace CustomMenuMusic
         private bool _overrideCustomSongsList = false;
         private RandomObjectPicker<string> filePathPicker;
         public static AudioClip MenuMusic { get; set; }
+        public static bool IsMenuSongPlaying { get; internal set; } = false;
         public static bool IsPauseOrFadeOut { get; internal set; } = true;
         public int ActiveChannel => this.PreviewPlayer.GetField<int, SongPreviewPlayer>("_activeChannel");
         public AudioSource ActiveAudioSource
@@ -213,7 +214,7 @@ namespace CustomMenuMusic
             HMMainThreadDispatcher.instance.Enqueue(this.StartAudioSource());
         }
 
-        private void Next()
+        public void Next()
         {
             HMMainThreadDispatcher.instance.Enqueue(this.LoadAudioClip());
             HMMainThreadDispatcher.instance.Enqueue(this.StartAudioSource());
@@ -230,7 +231,7 @@ namespace CustomMenuMusic
             try {
                 if (this.PreviewPlayer) {
                     this.PreviewPlayer.gameObject.SetActive(true);
-                    this.PreviewPlayer.CrossFadeToDefault();
+                    this.PreviewPlayer.CrossfadeTo(MenuMusic, 0f, -1f, true);
                 }
             }
             catch (Exception ex) {

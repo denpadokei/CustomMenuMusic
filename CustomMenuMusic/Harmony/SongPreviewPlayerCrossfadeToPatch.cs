@@ -21,7 +21,10 @@ namespace CustomMenuMusic.Harmony
         {
             if (isDefault && CustomMenuMusic.MenuMusic) {
                 audioClip = CustomMenuMusic.MenuMusic;
-                startTime = Mathf.Max(UnityEngine.Random.Range(0f, (CustomMenuMusic.MenuMusic.length - 0.1f) / 2), 0f);
+                CustomMenuMusic.IsMenuSongPlaying = true;
+            }
+            else {
+                CustomMenuMusic.IsMenuSongPlaying = false;
             }
             __state = isDefault;
         }
@@ -44,6 +47,15 @@ namespace CustomMenuMusic.Harmony
                 source.loop = false;
                 ____transitionAfterDelay = false;
             }
+        }
+    }
+
+    [HarmonyPatch(typeof(SongPreviewPlayer), nameof(SongPreviewPlayer.CrossfadeToDefault))]
+    public class SongPreviewPlayerCrossfadeToDefaultPatch
+    {
+        public static bool Prefix()
+        {
+            return !CustomMenuMusic.IsMenuSongPlaying;
         }
     }
 }

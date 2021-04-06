@@ -1,0 +1,9 @@
+﻿<bg xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'>
+  <vertical pad='10' vertical-fit='PreferredSize'>
+    <horizontal horizontal-fit='PreferredSize' child-align='MiddleLeft' child-expand-width='false' pad='4'>
+      <text text='~song-name' align='Center'></text>
+      <button text='PLAY NOW PLAY' on-click='play-now-play' preferred-width='-1' pad='2'></button>
+    </horizontal>
+    <button text='SKIP' on-click='skip' preferred-width='40'></button>
+  </vertical>
+</bg>

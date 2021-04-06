@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 using Zenject;
 using static CustomMenuMusic.Views.ConfigViewController;
 
@@ -16,13 +17,14 @@ namespace CustomMenuMusic
 {
     public class NowPlaying : MonoBehaviour, INowPlayable
     {
+        private GameObject rootObject;
         private Canvas _canvas;
         private CurvedCanvasSettings _curvedCanvasSettings;
         private CurvedTextMeshPro _nowPlayingText;
         private string songName;
-        private static readonly Vector3 LeftPosition = new Vector3(-2.55f, 2.2f, 1);
-        private static readonly Vector3 CenterPosition = new Vector3(-1.05f, 2.45f, 2.6f);
-        private static readonly Vector3 RightPosition = new Vector3(1.9f, 2.2f, 2.2f);
+        private static readonly Vector3 LeftPosition = new Vector3(-2.8f, 3f, 1);
+        private static readonly Vector3 CenterPosition = new Vector3(0, 3.1f, 4.2f);
+        private static readonly Vector3 RightPosition = new Vector3(2.8f, 3f, 1);
         private static readonly Vector3 LeftRotation = new Vector3(0, -60, 0);
         private static readonly Vector3 CenterRotation = new Vector3(0, 0, 0);
         private static readonly Vector3 RightRotation = new Vector3(0, 60, 0);
@@ -88,38 +90,45 @@ namespace CustomMenuMusic
                     rotation = RightRotation;
                     break;
                 default:
-                    DestroyImmediate(this.gameObject);
+                    Destroy(this.rootObject);
                     return;
             }
 
-            this.gameObject.transform.position = position;
-            this.gameObject.transform.eulerAngles = rotation;
-            this.gameObject.transform.localScale = scale;
+            this.rootObject.transform.position = position;
+            this.rootObject.transform.eulerAngles = rotation;
+            this.rootObject.transform.localScale = scale;
         }
 
         private void Awake()
         {
             Logger.Log("Awake call");
-            this.SetLocation((Location)PluginConfig.Instance.NowPlayingLocation);
-
-            this._canvas = this.gameObject.AddComponent<Canvas>();
-            this._curvedCanvasSettings = this.gameObject.AddComponent<CurvedCanvasSettings>();
+            this.rootObject = new GameObject("Nowplay Canvas", typeof(Canvas), typeof(CurvedCanvasSettings), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
+            
+            var sizeFitter = this.rootObject.GetComponent<ContentSizeFitter>();
+            sizeFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            sizeFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+            this._canvas = this.rootObject.GetComponent<Canvas>();
+            this._canvas.sortingOrder = 3;
+            this._curvedCanvasSettings = this.rootObject.GetComponent<CurvedCanvasSettings>();
+            this._curvedCanvasSettings.SetRadius(0);
             this._canvas.renderMode = RenderMode.WorldSpace;
-            this._canvas.enabled = false;
             var rectTransform = this._canvas.transform as RectTransform;
             rectTransform.sizeDelta = CanvasSize;
-
+            this.SetLocation((Location)PluginConfig.Instance.NowPlayingLocation);
             this._nowPlayingText = this.CreateText(this._canvas.transform as RectTransform, String.Empty, new Vector2(10, 31));
             rectTransform = this._nowPlayingText.transform as RectTransform;
             rectTransform.SetParent(this._canvas.transform, false);
-            rectTransform.anchoredPosition = new Vector2(10, 31);
-            rectTransform.sizeDelta = new Vector2(100, 20);
+            rectTransform.anchoredPosition = Vector2.one / 2;
             this._nowPlayingText.text = String.Empty;
             this._nowPlayingText.fontSize = 14;
             this.SetTextColor();
-
-            this._canvas.enabled = true;
         }
+
+        private void OnDestroy()
+        {
+            Destroy(this.rootObject);
+        }
+
         private CurvedTextMeshPro CreateText(RectTransform parent, string text, Vector2 anchoredPosition) => this.CreateText(parent, text, anchoredPosition, new Vector2(0, 0));
 
         private CurvedTextMeshPro CreateText(RectTransform parent, string text, Vector2 anchoredPosition, Vector2 sizeDelta)
@@ -133,7 +142,7 @@ namespace CustomMenuMusic
             textMesh.text = text;
             textMesh.fontSize = 4;
             textMesh.overrideColorTags = true;
-            textMesh.color = new Color(0.349f, 0.69f, 0.957f, 1);
+            textMesh.color = Color.white;
 
             textMesh.rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
             textMesh.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
