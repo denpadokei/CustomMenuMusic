@@ -174,8 +174,8 @@
     <None Include="BuiltInSongs\despacito.ogg" />
     <EmbeddedResource Include="manifest.json" />
     <EmbeddedResource Include="Resources\ABOUT.md" />
-    <EmbeddedResource Include="Views\Settings.bsml" />
-    <EmbeddedResource Include="Views\TabViewController.bsml">
+    <EmbeddedResource Include="Views\ConfigViewController.bsml" />
+    <EmbeddedResource Include="Views\CMMTabViewController.bsml">
       <DependentUpon>CMMTabViewController.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
