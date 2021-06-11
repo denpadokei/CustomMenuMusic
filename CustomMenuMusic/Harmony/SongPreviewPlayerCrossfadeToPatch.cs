@@ -7,7 +7,7 @@ using UnityEngine;
 namespace CustomMenuMusic.Harmony
 {
     [HarmonyPatch(typeof(SongPreviewPlayer), nameof(SongPreviewPlayer.CrossfadeTo),
-        new Type[] { typeof(AudioClip), typeof(float), typeof(float), typeof(bool) })]
+        new Type[] { typeof(AudioClip), typeof(float), typeof(float), typeof(float), typeof(bool) })]
     public class SongPreviewPlayerCrossfadeToPatch
     {
         /// <summary>
@@ -17,7 +17,7 @@ namespace CustomMenuMusic.Harmony
         /// <param name="startTime"></param>
         /// <param name="duration"></param>
         /// <returns></returns>
-        public static void Prefix(ref AudioClip audioClip, ref float startTime, ref float duration, ref bool isDefault, out bool __state)
+        public static void Prefix(ref AudioClip audioClip, ref float musicVolume, ref float startTime, ref float duration, ref bool isDefault, out bool __state)
         {
             if (isDefault && CustomMenuMusic.MenuMusic) {
                 audioClip = CustomMenuMusic.MenuMusic;
