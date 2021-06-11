@@ -8,11 +8,11 @@
     "",
     "A plugin to let you use custom music in your menu."
   ],
-  "gameVersion": "1.14.0",
+  "gameVersion": "1.16.2",
   "id": "Custom Menu Music",
   "icon": "CustomMenuMusic.Resources.KlouJam.png",
   "name": "Custom Menu Music",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "features": [],
   "dependsOn": {
     "BSIPA": "^4.1.6",

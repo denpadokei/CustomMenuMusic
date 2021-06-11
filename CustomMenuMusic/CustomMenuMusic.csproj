@@ -35,6 +35,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Configuration\PluginConfig.cs" />
+    <Compile Include="Harmony\ResultViewPatch.cs" />
     <Compile Include="Harmony\SongPreviewPlayerCrossfadeToPatch.cs" />
     <Compile Include="Harmony\SongPreviewPlayerPauseAndSongPreviewPlayerFadeOutPatchPatch.cs" />
     <Compile Include="Harmony\SongPreviewPlayerPauseOnInputFocusLost.cs" />
@@ -72,6 +73,11 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\Core.dll</HintPath>
       <Private>False</Private>
+    </Reference>
+    <Reference Include="GameplayCore, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <Private>False</Private>
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\GameplayCore.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="HMLib, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
