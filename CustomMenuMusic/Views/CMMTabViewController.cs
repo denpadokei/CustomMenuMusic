@@ -64,14 +64,12 @@ namespace CustomMenuMusic.Views
             this._customMenuMusic.Next();
         }
 
-        public void Initialize() => GameplaySetup.instance?.AddTab("Custom Menu Music", this.ResourceName, this);
-
-        protected override void OnDestroy()
+        public void Initialize()
         {
+            Logger.Log("Create tab.");
             GameplaySetup.instance?.RemoveTab("Custom Menu Music");
-            base.OnDestroy();
+            GameplaySetup.instance?.AddTab("Custom Menu Music", this.ResourceName, this);
         }
-
         protected override void DidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling)
         {
             base.DidActivate(firstActivation, addedToHierarchy, screenSystemEnabling);
