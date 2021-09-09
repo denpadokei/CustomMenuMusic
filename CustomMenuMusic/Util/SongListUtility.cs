@@ -51,7 +51,17 @@ namespace CustomMenuMusic.Util
         {
             if (this._levelCollectionViewController) {
                 yield return new WaitWhile(() => !Loader.AreSongsLoaded || Loader.AreSongsLoading);
-
+                // Make sure our custom songpack is selected
+                this.SelectCustomSongPack(2);
+                this._levelFilteringNavigationController.UpdateCustomSongs();
+                var tableView = this._annotatedBeatmapLevelCollectionsViewController.GetField<AnnotatedBeatmapLevelCollectionsTableView, AnnotatedBeatmapLevelCollectionsViewController>("_annotatedBeatmapLevelCollectionsTableView");
+                tableView.SelectAndScrollToCellWithIdx(0);
+                var customSong = tableView.GetField<IReadOnlyList<IAnnotatedBeatmapLevelCollection>, AnnotatedBeatmapLevelCollectionsTableView>("_annotatedBeatmapLevelCollections").FirstOrDefault();
+                this._annotatedBeatmapLevelCollectionsViewController.HandleDidSelectAnnotatedBeatmapLevelCollection(tableView, customSong);
+                var song = Loader.GetLevelById(levelID);
+                if (song == null) {
+                    yield break;
+                }
                 // handle if song browser is present
                 if (BetterSongListPluginPresent) {
                     this.ClearFilter();
@@ -60,23 +70,9 @@ namespace CustomMenuMusic.Util
                     this.SongBrowserCancelFilter();
                 }
                 yield return null;
-                // Make sure our custom songpack is selected
-                this.SelectCustomSongPack(2);
-                this._levelFilteringNavigationController.UpdateCustomSongs();
-                var tableView = this._annotatedBeatmapLevelCollectionsViewController.GetField<AnnotatedBeatmapLevelCollectionsTableView, AnnotatedBeatmapLevelCollectionsViewController>("_annotatedBeatmapLevelCollectionsTableView");
-                tableView.SelectAndScrollToCellWithIdx(0);
-                var customSong = tableView.GetField<IReadOnlyList<IAnnotatedBeatmapLevelCollection>, AnnotatedBeatmapLevelCollectionsTableView>("_annotatedBeatmapLevelCollections").FirstOrDefault();
-                this._levelFilteringNavigationController.HandleAnnotatedBeatmapLevelCollectionsViewControllerDidSelectAnnotatedBeatmapLevelCollection(customSong);
-
-
-                var song = Loader.GetLevelById(levelID);
-                if (song == null) {
-                    yield break;
-                }
                 // get the table view
                 var levelsTableView = this._levelCollectionViewController.GetField<LevelCollectionTableView, LevelCollectionViewController>("_levelCollectionTableView");
                 levelsTableView.SelectLevel(song);
-
             }
             callback?.Invoke();
         }
