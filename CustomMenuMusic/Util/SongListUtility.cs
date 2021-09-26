@@ -52,12 +52,12 @@ namespace CustomMenuMusic.Util
             if (this._levelCollectionViewController) {
                 yield return new WaitWhile(() => !Loader.AreSongsLoaded || Loader.AreSongsLoading);
                 // Make sure our custom songpack is selected
-                this.SelectCustomSongPack(2);
+                this.SelectCustomSongPack(1);
                 this._levelFilteringNavigationController.UpdateCustomSongs();
-                var tableView = this._annotatedBeatmapLevelCollectionsViewController.GetField<AnnotatedBeatmapLevelCollectionsTableView, AnnotatedBeatmapLevelCollectionsViewController>("_annotatedBeatmapLevelCollectionsTableView");
-                tableView.SelectAndScrollToCellWithIdx(0);
-                var customSong = tableView.GetField<IReadOnlyList<IAnnotatedBeatmapLevelCollection>, AnnotatedBeatmapLevelCollectionsTableView>("_annotatedBeatmapLevelCollections").FirstOrDefault();
-                this._annotatedBeatmapLevelCollectionsViewController.HandleDidSelectAnnotatedBeatmapLevelCollection(tableView, customSong);
+                var gridView = this._annotatedBeatmapLevelCollectionsViewController.GetField<AnnotatedBeatmapLevelCollectionsGridView, AnnotatedBeatmapLevelCollectionsViewController>("_annotatedBeatmapLevelCollectionsGridView");
+                gridView.SelectAndScrollToCellWithIdx(0);
+                var customSong = gridView.GetField<IReadOnlyList<IAnnotatedBeatmapLevelCollection>, AnnotatedBeatmapLevelCollectionsGridView>("_annotatedBeatmapLevelCollections").FirstOrDefault();
+                this._annotatedBeatmapLevelCollectionsViewController.HandleDidSelectAnnotatedBeatmapLevelCollection(customSong);
                 var song = Loader.GetLevelById(levelID);
                 if (song == null) {
                     yield break;
