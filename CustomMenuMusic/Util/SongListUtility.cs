@@ -77,22 +77,45 @@ namespace CustomMenuMusic.Util
             callback?.Invoke();
         }
 
+        /// <summary>
+        /// 通常のフィルタークリアと違って同期的に行うためきちんとリロードまで待ちます。
+        /// </summary>
         void ClearFilter()
         {
-            if (!BetterSongListPluginPresent) {
-                return;
-            }
             try {
-                var filerUI = Type.GetType("BetterSongList.UI.FilterUI, BetterSongList");
-                var filterUIInstance = filerUI.GetField("persistentNuts", (BindingFlags.NonPublic | BindingFlags.Static)).GetValue(filerUI);
-                var filterDorpDown = (DropdownWithTableView)filerUI.GetField("_filterDropdown", (BindingFlags.NonPublic | BindingFlags.Instance)).GetValue(filterUIInstance);
+                if (!BetterSongListPluginPresent) {
+                    return;
+                }
+                Type filerUI = Type.GetType("BetterSongList.UI.FilterUI, BetterSongList");
+                object filterUIInstance = filerUI.GetField("persistentNuts", (BindingFlags.NonPublic | BindingFlags.Static)).GetValue(filerUI);
+                DropdownWithTableView filterDorpDown = (DropdownWithTableView)filerUI.GetField("_filterDropdown", (BindingFlags.NonPublic | BindingFlags.Instance)).GetValue(filterUIInstance);
                 if (filterDorpDown.selectedIndex != 0) {
-                    var setFilterMethod = filerUI.GetMethod("SetFilter", (BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public));
-                    setFilterMethod.Invoke(filerUI, new object[] { null, true, true });
+                    MethodInfo setFilterMethod = filerUI.GetMethod("SetFilter", (BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public));
+                    setFilterMethod.Invoke(filerUI, new object[] { null, true, false });
+                    ResetLevelCollectionTableSet();
                 }
             }
             catch (Exception e) {
-                Logger.Log($"{e}");
+                Logger.logger.Error(e);
+            }
+        }
+
+        /// <summary>
+        /// リセット用メソッド
+        /// </summary>
+        /// <param name="asyncProcess"></param>
+        void ResetLevelCollectionTableSet(bool asyncProcess = false)
+        {
+            try {
+                if (!BetterSongListPluginPresent) {
+                    return;
+                }
+                Type levelCollectionTableSet = Type.GetType("BetterSongList.HarmonyPatches.HookLevelCollectionTableSet, BetterSongList");
+                MethodInfo setFilterMethod = levelCollectionTableSet.GetMethod("Refresh", (BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public));
+                setFilterMethod.Invoke(levelCollectionTableSet, new object[] { asyncProcess });
+            }
+            catch (Exception e) {
+                Logger.logger.Error(e);
             }
         }
 
