@@ -1,6 +1,7 @@
 ﻿using CustomMenuMusic.Util;
 using CustomMenuMusic.Views;
 using SiraUtil;
+using UnityEngine;
 using Zenject;
 
 namespace CustomMenuMusic.Installer
@@ -10,8 +11,8 @@ namespace CustomMenuMusic.Installer
         public override void InstallBindings()
         {
             this.Container.BindInterfacesAndSelfTo<SongListUtility>().AsCached();
-            this.Container.BindInterfacesAndSelfTo<CustomMenuMusic>().FromNewComponentOnNewGameObject(nameof(CustomMenuMusic)).AsCached().NonLazy();
-            this.Container.BindInterfacesAndSelfTo<NowPlaying>().FromNewComponentOnNewGameObject(nameof(NowPlaying)).AsCached();
+            this.Container.BindInterfacesAndSelfTo<CustomMenuMusic>().FromNewComponentOn(new GameObject(nameof(CustomMenuMusic))).AsCached().NonLazy();
+            this.Container.BindInterfacesAndSelfTo<NowPlaying>().FromNewComponentOn(new GameObject(nameof(NowPlaying))).AsCached();
             this.Container.BindInterfacesAndSelfTo<CMMTabViewController>().FromNewComponentAsViewController().AsSingle().NonLazy();
             this.Container.BindInterfacesAndSelfTo<ConfigViewController>().FromNewComponentAsViewController().AsSingle().NonLazy();
         }

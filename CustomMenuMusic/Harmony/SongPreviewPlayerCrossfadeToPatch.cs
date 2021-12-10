@@ -7,7 +7,7 @@ using UnityEngine;
 namespace CustomMenuMusic.Harmony
 {
     [HarmonyPatch(typeof(SongPreviewPlayer), nameof(SongPreviewPlayer.CrossfadeTo),
-        new Type[] { typeof(AudioClip), typeof(float), typeof(float), typeof(float), typeof(bool) })]
+        new Type[] { typeof(AudioClip), typeof(float), typeof(float), typeof(float), typeof(bool), typeof(Action) })]
     public class SongPreviewPlayerCrossfadeToPatch
     {
         /// <summary>

@@ -29,7 +29,7 @@ namespace CustomMenuMusic
             Configuration.PluginConfig.Instance = conf.Generated<Configuration.PluginConfig>();
             Logger.logger.Debug("Config loaded");
             Harmony = new HarmonyLib.Harmony(HarmonyID);
-            zenjector.OnMenu<CMMMenuInstaller>();
+            zenjector.Install<CMMMenuInstaller>(Location.Menu);
         }
 
         [OnStart]
