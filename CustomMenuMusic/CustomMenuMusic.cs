@@ -231,7 +231,7 @@ namespace CustomMenuMusic
             try {
                 if (this.PreviewPlayer) {
                     this.PreviewPlayer.gameObject.SetActive(true);
-                    this.PreviewPlayer.CrossfadeTo(MenuMusic, AudioManagerSO.kDefaultMusicVolume, 0f, -1f, true);
+                    this.PreviewPlayer.CrossfadeTo(MenuMusic, AudioManagerSO.kDefaultMusicVolume, 0f, -1f, true, null);
                 }
             }
             catch (Exception ex) {
