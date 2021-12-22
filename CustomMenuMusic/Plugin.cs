@@ -42,7 +42,7 @@ namespace CustomMenuMusic
         public void OnEnable() => Harmony.PatchAll(Assembly.GetExecutingAssembly());
 
         [OnDisable]
-        public void OnDisable() => Harmony.UnpatchAll(HarmonyID);
+        public void OnDisable() => Harmony.UnpatchSelf();
 
         [OnExit]
         public void OnApplicationQuit()
