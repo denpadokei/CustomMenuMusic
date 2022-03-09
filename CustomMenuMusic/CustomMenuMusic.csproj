@@ -35,7 +35,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Configuration\PluginConfig.cs" />
-    <Compile Include="Harmony\ResultViewPatch.cs" />
     <Compile Include="Harmony\SongPreviewPlayerCrossfadeToPatch.cs" />
     <Compile Include="Harmony\SongPreviewPlayerPauseAndSongPreviewPlayerFadeOutPatchPatch.cs" />
     <Compile Include="Harmony\SongPreviewPlayerPauseOnInputFocusLost.cs" />
