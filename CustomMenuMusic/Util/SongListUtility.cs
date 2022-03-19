@@ -104,7 +104,7 @@ namespace CustomMenuMusic.Util
         /// リセット用メソッド
         /// </summary>
         /// <param name="asyncProcess"></param>
-        void ResetLevelCollectionTableSet(bool asyncProcess = false)
+        void ResetLevelCollectionTableSet(bool asyncProcess = false, bool clearAsyncResult = true)
         {
             try {
                 if (!BetterSongListPluginPresent) {
@@ -112,7 +112,7 @@ namespace CustomMenuMusic.Util
                 }
                 Type levelCollectionTableSet = Type.GetType("BetterSongList.HarmonyPatches.HookLevelCollectionTableSet, BetterSongList");
                 MethodInfo setFilterMethod = levelCollectionTableSet.GetMethod("Refresh", (BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public));
-                setFilterMethod.Invoke(levelCollectionTableSet, new object[] { asyncProcess });
+                setFilterMethod.Invoke(levelCollectionTableSet, new object[] { asyncProcess, clearAsyncResult });
             }
             catch (Exception e) {
                 Logger.logger.Error(e);
