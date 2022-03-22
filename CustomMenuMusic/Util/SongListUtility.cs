@@ -89,9 +89,9 @@ namespace CustomMenuMusic.Util
                 Type filerUI = Type.GetType("BetterSongList.UI.FilterUI, BetterSongList");
                 object filterUIInstance = filerUI.GetField("persistentNuts", (BindingFlags.NonPublic | BindingFlags.Static)).GetValue(filerUI);
                 DropdownWithTableView filterDorpDown = (DropdownWithTableView)filerUI.GetField("_filterDropdown", (BindingFlags.NonPublic | BindingFlags.Instance)).GetValue(filterUIInstance);
-                if (filterDorpDown.selectedIndex != 0) {
+                if (filterDorpDown.selectedIndex != 6) {
                     MethodInfo setFilterMethod = filerUI.GetMethod("SetFilter", (BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public));
-                    setFilterMethod.Invoke(filerUI, new object[] { null, true, false });
+                    setFilterMethod.Invoke(filerUI, new object[] { "All", true, false });
                     ResetLevelCollectionTableSet();
                 }
             }
