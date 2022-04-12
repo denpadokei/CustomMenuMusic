@@ -26,7 +26,9 @@ namespace CustomMenuMusic.Harmony
                 CustomMenuMusic.IsMenuSongPlaying = false;
             }
             var max = audioClip.length - duration;
-            startTime = UnityEngine.Random.Range(0f, max < 0 ? 0f : max);
+            if (startTime == -1) {
+                startTime = UnityEngine.Random.Range(0, max);
+            }
             __state = isDefault;
         }
 
