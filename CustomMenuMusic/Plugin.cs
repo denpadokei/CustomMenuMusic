@@ -39,10 +39,26 @@ namespace CustomMenuMusic
         }
 
         [OnEnable]
-        public void OnEnable() => Harmony.PatchAll(Assembly.GetExecutingAssembly());
+        public void OnEnable()
+        {
+            try {
+                Harmony.PatchAll(Assembly.GetExecutingAssembly());
+            }
+            catch (Exception e) {
+                Logger.logger.Error(e);
+            }
+        }
 
         [OnDisable]
-        public void OnDisable() => Harmony.UnpatchSelf();
+        public void OnDisable()
+        {
+            try {
+                Harmony.UnpatchSelf();
+            }
+            catch (Exception e) {
+                Logger.logger.Error(e);
+            }
+        }
 
         [OnExit]
         public void OnApplicationQuit()

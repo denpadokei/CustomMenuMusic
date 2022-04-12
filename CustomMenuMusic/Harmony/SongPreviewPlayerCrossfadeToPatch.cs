@@ -1,7 +1,6 @@
 ﻿using CustomMenuMusic.Configuration;
 using HarmonyLib;
 using System;
-using System.Reflection;
 using UnityEngine;
 
 namespace CustomMenuMusic.Harmony

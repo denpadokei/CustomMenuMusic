@@ -5,6 +5,14 @@
     <checkbox-setting value="use-custom-result-songs" text="Use Custom Result Sound" />
     <checkbox-setting value="loop" text="Loop" />
     <bool-setting text="GrobalActiveSound" value="global-active-sound"></bool-setting>
+    <settings-submenu text="Song preview">
+      <settings-container>
+        <clickable-text text="Back" click-event="back" />
+        <bool-setting text="Enable song preview" value="enable-song-preview"></bool-setting>
+        <bool-setting text="Override song preview length" value="override-length"></bool-setting>
+        <slider-setting text="Max song preview length" value="max-song-preview-length" increment="0.5" min="0.5" max="20"></slider-setting>
+      </settings-container>
+    </settings-submenu>
     <settings-submenu text="Now Playing" hover-hint="Tweak Now Playing Options Here">
       <settings-container>
         <clickable-text text="Back" click-event="back" />
@@ -13,6 +21,5 @@
         <list-setting value="now-playing-color" text="Text Color" options="preset-colors" formatter="format-text-color" />
       </settings-container>
     </settings-submenu>
-
   </settings-container>
 </bg>

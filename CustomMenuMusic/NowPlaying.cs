@@ -39,14 +39,18 @@ namespace CustomMenuMusic
         public void SetCurrentSong(string newSong, bool isPath = true)
         {
             if (newSong == null || newSong == string.Empty) {
-                this._nowPlayingText.text = String.Empty;
-                if (PluginConfig.Instance.ShowNowPlaying) Logger.Log("newSong was invalid", Logger.LogLevel.Warning);
+                this._nowPlayingText.text = string.Empty;
+                if (PluginConfig.Instance.ShowNowPlaying) {
+                    Logger.Log("newSong was invalid", Logger.LogLevel.Warning);
+                }
+
                 return;
             }
 
             if (isPath) {
-                if (new DirectoryInfo(Path.GetDirectoryName(newSong)).Name.Equals("MenuSongs"))
+                if (new DirectoryInfo(Path.GetDirectoryName(newSong)).Name.Equals("MenuSongs")) {
                     this.songName = Path.GetFileNameWithoutExtension(newSong);
+                }
                 else {
                     try {
                         var songDirectory = Path.GetDirectoryName(newSong);
@@ -61,13 +65,17 @@ namespace CustomMenuMusic
                     }
                 }
             }
-            else
+            else {
                 this.songName = newSong;
+            }
 
-            if (this.songName != null || this.songName != string.Empty)
+            if (this.songName != null || this.songName != string.Empty) {
                 this._nowPlayingText.text = $"{LabelText}{this.songName}";
-            else
-                this._nowPlayingText.text = String.Empty;
+            }
+            else {
+                this._nowPlayingText.text = string.Empty;
+            }
+
             this.tabViewController.SongName = this.songName;
         }
 
@@ -103,7 +111,7 @@ namespace CustomMenuMusic
         {
             Logger.Log("Awake call");
             this.rootObject = new GameObject("Nowplay Canvas", typeof(Canvas), typeof(CurvedCanvasSettings), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
-            
+
             var sizeFitter = this.rootObject.GetComponent<ContentSizeFitter>();
             sizeFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
             sizeFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
@@ -115,11 +123,11 @@ namespace CustomMenuMusic
             var rectTransform = this._canvas.transform as RectTransform;
             rectTransform.sizeDelta = CanvasSize;
             this.SetLocation((Location)PluginConfig.Instance.NowPlayingLocation);
-            this._nowPlayingText = this.CreateText(this._canvas.transform as RectTransform, String.Empty, new Vector2(10, 31));
+            this._nowPlayingText = this.CreateText(this._canvas.transform as RectTransform, string.Empty, new Vector2(10, 31));
             rectTransform = this._nowPlayingText.transform as RectTransform;
             rectTransform.SetParent(this._canvas.transform, false);
             rectTransform.anchoredPosition = Vector2.one / 2;
-            this._nowPlayingText.text = String.Empty;
+            this._nowPlayingText.text = string.Empty;
             this._nowPlayingText.fontSize = 14;
             this.SetTextColor();
         }
@@ -129,7 +137,10 @@ namespace CustomMenuMusic
             Destroy(this.rootObject);
         }
 
-        private CurvedTextMeshPro CreateText(RectTransform parent, string text, Vector2 anchoredPosition) => this.CreateText(parent, text, anchoredPosition, new Vector2(0, 0));
+        private CurvedTextMeshPro CreateText(RectTransform parent, string text, Vector2 anchoredPosition)
+        {
+            return this.CreateText(parent, text, anchoredPosition, new Vector2(0, 0));
+        }
 
         private CurvedTextMeshPro CreateText(RectTransform parent, string text, Vector2 anchoredPosition, Vector2 sizeDelta)
         {
@@ -153,9 +164,15 @@ namespace CustomMenuMusic
             return textMesh;
         }
 
-        public void SetTextColor() => this.SetTextColor(PluginConfig.Instance.NowPlayingColor);
+        public void SetTextColor()
+        {
+            this.SetTextColor(PluginConfig.Instance.NowPlayingColor);
+        }
 
-        public void SetTextColor(int colorIndex) => this._nowPlayingText.color = colors[colorIndex].Item1;
+        public void SetTextColor(int colorIndex)
+        {
+            this._nowPlayingText.color = colors[colorIndex].Item1;
+        }
 
         internal static readonly List<Tuple<Color, string>> colors = new List<Tuple<Color, string>>()
         {

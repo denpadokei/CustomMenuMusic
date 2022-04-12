@@ -2,7 +2,6 @@
 using BeatSaberMarkupLanguage.Settings;
 using BeatSaberMarkupLanguage.ViewControllers;
 using CustomMenuMusic.Configuration;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -58,23 +57,50 @@ namespace CustomMenuMusic.Views
             get => PluginConfig.Instance.GrobalActiveSound;
             set => PluginConfig.Instance.GrobalActiveSound = value;
         }
+        [UIValue("enable-song-preview")]
+        public bool EnableSongPreview
+        {
+            get => PluginConfig.Instance.EnableSongPreview;
+            set => PluginConfig.Instance.EnableSongPreview = value;
+        }
+        [UIValue("override-length")]
+        public bool OverrideSongPrevewLength
+        {
+            get => PluginConfig.Instance.OverrideSongPrevewLength;
+            set => PluginConfig.Instance.OverrideSongPrevewLength = value;
+        }
+        [UIValue("max-song-preview-length")]
+        public float MaxSongPreviewLength
+        {
+            get => PluginConfig.Instance.MaxSongPreviewLength;
+            set => PluginConfig.Instance.MaxSongPreviewLength = value;
+        }
         [UIValue("volume-range")]
         public List<object> VolumeRange => Enumerable.Range(0, 21).Select(x => x * 0.05f).Cast<object>().ToList();
 
         [UIAction("percent-formatter")]
-        public string OnFormatPercent(float obj) => $"{obj * 100}%";
+        public string OnFormatPercent(float obj)
+        {
+            return $"{obj * 100}%";
+        }
 
         [UIValue("now-playing-location-range")]
-        public List<object> NowPlayingLocationRange => Enumerable.Range(0, 3).Select(x => (int)x).Cast<object>().ToList();
+        public List<object> NowPlayingLocationRange => Enumerable.Range(0, 3).Select(x => x).Cast<object>().ToList();
 
         [UIAction("format-now-playing-location")]
-        public string OnFormatNowPlayingLocation(int obj) => locationNames[obj];
+        public string OnFormatNowPlayingLocation(int obj)
+        {
+            return locationNames[obj];
+        }
 
         [UIValue("preset-colors")]
-        public List<object> presetColors = Enumerable.Range(0, NowPlaying.colors.Count).Select(x => (int)x).Cast<object>().ToList();
+        public List<object> presetColors = Enumerable.Range(0, NowPlaying.colors.Count).Select(x => x).Cast<object>().ToList();
 
         [UIAction("format-text-color")]
-        public string OnFormatTextColor(int value) => $"<color=#{ColorUtility.ToHtmlStringRGB(NowPlaying.colors[(int)value].Item1)}>{NowPlaying.colors[(int)value].Item2}";
+        public string OnFormatTextColor(int value)
+        {
+            return $"<color=#{ColorUtility.ToHtmlStringRGB(NowPlaying.colors[value].Item1)}>{NowPlaying.colors[value].Item2}";
+        }
 
         internal void CreateSettingsUI()
         {
@@ -82,9 +108,12 @@ namespace CustomMenuMusic.Views
             BSMLSettings.instance.AddSettingsMenu("Custom Menu Music", "CustomMenuMusic.Views.ConfigViewController.bsml", this);
         }
 
-        public void Initialize() => this.CreateSettingsUI();
+        public void Initialize()
+        {
+            this.CreateSettingsUI();
+        }
 
-        private static readonly List<String> locationNames = new List<string> { "Left Panel", "Center Panel", "Right Panel" };
+        private static readonly List<string> locationNames = new List<string> { "Left Panel", "Center Panel", "Right Panel" };
 
         public enum Location
         {

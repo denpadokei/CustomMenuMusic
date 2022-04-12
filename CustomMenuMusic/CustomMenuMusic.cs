@@ -1,5 +1,4 @@
-﻿using BS_Utils.Utilities;
-using CustomMenuMusic.Configuration;
+﻿using CustomMenuMusic.Configuration;
 using CustomMenuMusic.Interfaces;
 using CustomMenuMusic.Views;
 using IPA.Utilities;
@@ -8,11 +7,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
-using UnityEngine.SceneManagement;
 using Zenject;
 
 namespace CustomMenuMusic
@@ -86,7 +83,7 @@ namespace CustomMenuMusic
             this.waitWhileLoading = new WaitWhile(() => this._isLoadingAudioClip);
             if (!Directory.Exists(UserDataPath)) {
                 Directory.CreateDirectory(UserDataPath);
-            }   
+            }
             await this.GetSongsListAsync();
         }
 
@@ -116,25 +113,37 @@ namespace CustomMenuMusic
             }
         }
         #endregion
-        public Task GetSongsListAsync() => this.GetSongsListAsync(PluginConfig.Instance.UseCustomMenuSongs);
+        public Task GetSongsListAsync()
+        {
+            return this.GetSongsListAsync(PluginConfig.Instance.UseCustomMenuSongs);
+        }
 
-        public Task GetSongsListAsync(bool useCustomMenuSongs) => Task.Run(() =>
-                                                                            {
-                                                                                if (!Directory.Exists(Path.Combine(UserDataPath, MenuSongsPath))) {
-                                                                                    Directory.CreateDirectory(Path.Combine(UserDataPath, MenuSongsPath));
-                                                                                }
-                                                                                if (useCustomMenuSongs && this.GetAllCustomMenuSongsAsync().Any()) {
-                                                                                    this.filePathPicker = new RandomObjectPicker<string>(this.GetAllCustomMenuSongsAsync().ToArray(), 0f);
-                                                                                }
-                                                                                else {
-                                                                                    this.filePathPicker = new RandomObjectPicker<string>(this.GetAllCustomSongsAsync().ToArray(), 0f);
-                                                                                }
-                                                                                this._overrideCustomSongsList = !this.filePathPicker.GetField<string[], RandomObjectPicker<string>>("_objects").Any();
-                                                                            });
+        public Task GetSongsListAsync(bool useCustomMenuSongs)
+        {
+            return Task.Run(() =>
+                         {
+                             if (!Directory.Exists(Path.Combine(UserDataPath, MenuSongsPath))) {
+                                 Directory.CreateDirectory(Path.Combine(UserDataPath, MenuSongsPath));
+                             }
+                             if (useCustomMenuSongs && this.GetAllCustomMenuSongsAsync().Any()) {
+                                 this.filePathPicker = new RandomObjectPicker<string>(this.GetAllCustomMenuSongsAsync().ToArray(), 0f);
+                             }
+                             else {
+                                 this.filePathPicker = new RandomObjectPicker<string>(this.GetAllCustomSongsAsync().ToArray(), 0f);
+                             }
+                             this._overrideCustomSongsList = !this.filePathPicker.GetField<string[], RandomObjectPicker<string>>("_objects").Any();
+                         });
+        }
 
-        private IEnumerable<string> GetAllCustomMenuSongsAsync() => Directory.EnumerateFiles(Path.Combine(UserDataPath, MenuSongsPath), "*.ogg", SearchOption.AllDirectories);
+        private IEnumerable<string> GetAllCustomMenuSongsAsync()
+        {
+            return Directory.EnumerateFiles(Path.Combine(UserDataPath, MenuSongsPath), "*.ogg", SearchOption.AllDirectories);
+        }
 
-        private IEnumerable<string> GetAllCustomSongsAsync() => this.DirSearch(CustomSongsPath);
+        private IEnumerable<string> GetAllCustomSongsAsync()
+        {
+            return this.DirSearch(CustomSongsPath);
+        }
 
         private string GetResultSongPath()
         {
@@ -165,7 +174,10 @@ namespace CustomMenuMusic
             }
         }
 
-        private IEnumerable<string> DirSearch(string sDir) => Directory.EnumerateFiles(sDir, "*.egg", SearchOption.AllDirectories);
+        private IEnumerable<string> DirSearch(string sDir)
+        {
+            return Directory.EnumerateFiles(sDir, "*.egg", SearchOption.AllDirectories);
+        }
 
         private string GetNewSong()
         {
@@ -175,7 +187,10 @@ namespace CustomMenuMusic
 
         private IEnumerator LoadAudioClip()
         {
-            if (this._isLoadingAudioClip) yield break;
+            if (this._isLoadingAudioClip) {
+                yield break;
+            }
+
             this._isLoadingAudioClip = true;
             yield return new WaitUntil(() => this.filePathPicker != null || this._overrideCustomSongsList);
 
@@ -220,7 +235,11 @@ namespace CustomMenuMusic
             HMMainThreadDispatcher.instance.Enqueue(this.StartAudioSource());
         }
 
-        private void StopActiveAudioSource() => this.PreviewPlayer.gameObject.SetActive(false);
+        private void StopActiveAudioSource()
+        {
+            this.PreviewPlayer.gameObject.SetActive(false);
+        }
+
         private IEnumerator StartAudioSource()
         {
             if (this._isChangeing || !this.PreviewPlayer) {
