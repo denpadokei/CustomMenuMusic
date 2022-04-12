@@ -27,7 +27,7 @@ namespace CustomMenuMusic.Harmony
             }
             var max = audioClip.length - duration;
             if (startTime == -1) {
-                startTime = UnityEngine.Random.Range(0, max);
+                startTime = UnityEngine.Random.Range(0f, max < 0 ? 0 : audioClip.length);
             }
             __state = isDefault;
         }
