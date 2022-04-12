@@ -25,6 +25,8 @@ namespace CustomMenuMusic.Harmony
             else {
                 CustomMenuMusic.IsMenuSongPlaying = false;
             }
+            var max = audioClip.length - duration;
+            startTime = UnityEngine.Random.Range(0f, max < 0 ? 0f : max);
             __state = isDefault;
         }
 
