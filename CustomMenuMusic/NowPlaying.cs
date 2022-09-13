@@ -125,7 +125,6 @@ namespace CustomMenuMusic
             this.SetLocation((Location)PluginConfig.Instance.NowPlayingLocation);
             this._nowPlayingText = this.CreateText(this._canvas.transform as RectTransform, string.Empty, new Vector2(10, 31));
             rectTransform = this._nowPlayingText.transform as RectTransform;
-            rectTransform.SetParent(this._canvas.transform, false);
             rectTransform.anchoredPosition = Vector2.one / 2;
             this._nowPlayingText.text = string.Empty;
             this._nowPlayingText.fontSize = 14;
@@ -148,7 +147,10 @@ namespace CustomMenuMusic
             gameObj.SetActive(false);
 
             var textMesh = gameObj.AddComponent<CurvedTextMeshPro>();
-            textMesh.font = Instantiate(Resources.FindObjectsOfTypeAll<TMP_FontAsset>().First(t => t.name == "Teko-Medium SDF Numbers Monospaced Curved"));
+            var font = Resources.FindObjectsOfTypeAll<TMP_FontAsset>().FirstOrDefault(t => t.name == "Teko-Medium SDF");
+            if (font != null) {
+                textMesh.font = font;
+            }
             textMesh.rectTransform.SetParent(parent, false);
             textMesh.text = text;
             textMesh.fontSize = 4;

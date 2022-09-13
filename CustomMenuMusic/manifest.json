@@ -12,8 +12,7 @@
   "id": "Custom Menu Music",
   "icon": "CustomMenuMusic.Resources.KlouJam.png",
   "name": "Custom Menu Music",
-  "version": "5.1.1",
-  "features": [],
+  "version": "5.1.2",
   "dependsOn": {
     "BSIPA": "^4.2.0",
     "BS Utils": "^1.11.0",
