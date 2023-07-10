@@ -42,6 +42,7 @@
     <Compile Include="Harmony\SongPreviewPlayerPauseOnInputFocusLost.cs" />
     <Compile Include="Harmony\SongPreviewPlayerUnPausePatch.cs" />
     <Compile Include="Harmony\SongPreviewPlayerUpdatePatch.cs" />
+    <Compile Include="Util\MainThreadInvoker.cs" />
     <Compile Include="Views\ConfigViewController.cs" />
     <Compile Include="CustomMenuMusic.cs" />
     <Compile Include="Installer\CMMMenuInstaller.cs" />
@@ -117,6 +118,11 @@
       <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="Unity.ResourceManager, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <Private>False</Private>
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\Unity.ResourceManager.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
     <Reference Include="Unity.TextMeshPro">
       <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\Unity.TextMeshPro.dll</HintPath>
       <Private>False</Private>

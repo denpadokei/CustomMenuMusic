@@ -50,7 +50,7 @@ namespace CustomMenuMusic.Views
             }
 
             if (Loader.CustomLevels.TryGetValue(Path.Combine(Environment.CurrentDirectory, Path.GetDirectoryName(this.CurrentSongPath)), out var song)) {
-                HMMainThreadDispatcher.instance.Enqueue(this.songListUtility.ScrollToLevel(song.levelID, null));
+                MainThreadInvoker.Instance.Enqueue(this.songListUtility.ScrollToLevel(song.levelID, null));
             }
             else {
                 Logger.Log($"Notfind song : {this.CurrentSongPath}");
