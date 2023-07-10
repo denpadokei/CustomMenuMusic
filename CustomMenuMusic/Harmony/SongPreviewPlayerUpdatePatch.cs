@@ -20,12 +20,7 @@ namespace CustomMenuMusic.Harmony
         public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
             foreach (var code in instructions.Select((x, i) => new { x, i })) {
-                if (code.x.opcode == OpCodes.Ldc_R4 && (float)code.x.operand == 0f && code.i == 104) {
-                    yield return s_arguments;
-                }
-                else {
-                    yield return code.x;
-                }
+                yield return code.x.opcode == OpCodes.Ldc_R4 && (float)code.x.operand == 0f && code.i == 104 ? s_arguments : code.x;
             }
         }
     }

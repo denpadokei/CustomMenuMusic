@@ -10,7 +10,6 @@ namespace CustomMenuMusic.Configuration
         public static PluginConfig Instance { get; internal set; }
         public event Action<PluginConfig> OnSettingChanged;
 
-
         public virtual bool UseCustomMenuSongs { get; set; }
         public virtual bool Loop { get; set; }
         public virtual bool ShowNowPlaying { get; set; } = true;

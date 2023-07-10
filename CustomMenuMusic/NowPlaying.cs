@@ -54,7 +54,7 @@ namespace CustomMenuMusic
                 else {
                     try {
                         var songDirectory = Path.GetDirectoryName(newSong);
-                        var infoFileName = (File.Exists(Path.Combine(songDirectory, "info.json"))) ? "info.json" : "info.dat";
+                        var infoFileName = File.Exists(Path.Combine(songDirectory, "info.json")) ? "info.json" : "info.dat";
                         dynamic songInfo = JsonConvert.DeserializeObject(File.ReadAllText(Path.Combine(songDirectory, infoFileName)));
                         this.songName = songInfo.songName ?? songInfo._songName;
 
@@ -69,12 +69,7 @@ namespace CustomMenuMusic
                 this.songName = newSong;
             }
 
-            if (this.songName != null || this.songName != string.Empty) {
-                this._nowPlayingText.text = $"{LabelText}{this.songName}";
-            }
-            else {
-                this._nowPlayingText.text = string.Empty;
-            }
+            this._nowPlayingText.text = this.songName != null || this.songName != string.Empty ? $"{LabelText}{this.songName}" : string.Empty;
 
             this.tabViewController.SongName = this.songName;
         }

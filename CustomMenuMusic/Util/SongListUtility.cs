@@ -87,11 +87,11 @@ namespace CustomMenuMusic.Util
                     return;
                 }
                 var filerUI = Type.GetType("BetterSongList.UI.FilterUI, BetterSongList");
-                var filterUIInstance = filerUI.GetField("persistentNuts", (BindingFlags.NonPublic | BindingFlags.Static)).GetValue(filerUI);
-                var filterDorpDown = (DropdownWithTableView)filerUI.GetField("_filterDropdown", (BindingFlags.NonPublic | BindingFlags.Instance)).GetValue(filterUIInstance);
+                var filterUIInstance = filerUI.GetField("persistentNuts", BindingFlags.NonPublic | BindingFlags.Static).GetValue(filerUI);
+                var filterDorpDown = (DropdownWithTableView)filerUI.GetField("_filterDropdown", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(filterUIInstance);
                 if (filterDorpDown.selectedIndex != 6) {
-                    var setFilterMethod = filerUI.GetMethod("SetFilter", (BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public));
-                    setFilterMethod.Invoke(filerUI, new object[] { "All", true, false });
+                    var setFilterMethod = filerUI.GetMethod("SetFilter", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
+                    _ = setFilterMethod.Invoke(filerUI, new object[] { "All", true, false });
                     this.ResetLevelCollectionTableSet();
                 }
             }
@@ -111,8 +111,8 @@ namespace CustomMenuMusic.Util
                     return;
                 }
                 var levelCollectionTableSet = Type.GetType("BetterSongList.HarmonyPatches.HookLevelCollectionTableSet, BetterSongList");
-                var setFilterMethod = levelCollectionTableSet.GetMethod("Refresh", (BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public));
-                setFilterMethod.Invoke(levelCollectionTableSet, new object[] { asyncProcess, clearAsyncResult });
+                var setFilterMethod = levelCollectionTableSet.GetMethod("Refresh", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
+                _ = setFilterMethod.Invoke(levelCollectionTableSet, new object[] { asyncProcess, clearAsyncResult });
             }
             catch (Exception e) {
                 Logger.logger.Error(e);
@@ -126,18 +126,18 @@ namespace CustomMenuMusic.Util
             }
             try {
                 var configType = Type.GetType("SongBrowser.Configuration.PluginConfig, SongBrowser");
-                var configInstance = configType.GetProperty("Instance", (BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public)).GetValue(configType);
+                var configInstance = configType.GetProperty("Instance", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public).GetValue(configType);
                 var filterModeProp = configType.GetProperty("FilterMode");
                 var sortModeProp = configType.GetProperty("SortMode");
                 var sbAppInfo = Type.GetType("SongBrowser.SongBrowserApplication, SongBrowser");
-                var sbAppInstance = sbAppInfo.GetField("Instance", (BindingFlags.Static | BindingFlags.Public)).GetValue(sbAppInfo);
+                var sbAppInstance = sbAppInfo.GetField("Instance", BindingFlags.Static | BindingFlags.Public).GetValue(sbAppInfo);
                 var songBrowserUIType = Type.GetType("SongBrowser.UI.SongBrowserUI, SongBrowser"); //SongBrowserApplication.Instance.Ui;
                 var songBrowserUI = sbAppInfo.GetProperty("Ui", BindingFlags.Public | BindingFlags.Instance).GetValue(sbAppInstance);
                 if (filterModeProp != null && sortModeProp != null && songBrowserUI != null) {
                     var filter = (int)filterModeProp.GetValue(configInstance);
                     var sortMode = (int)sortModeProp.GetValue(configInstance);
                     if (filter != 0 && sortMode != 2) {
-                        songBrowserUIType.GetMethod("CancelFilter").Invoke(songBrowserUI, null);
+                        _ = songBrowserUIType.GetMethod("CancelFilter").Invoke(songBrowserUI, null);
                     }
                 }
             }

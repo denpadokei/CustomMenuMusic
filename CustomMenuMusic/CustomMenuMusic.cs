@@ -1,5 +1,6 @@
 ﻿using CustomMenuMusic.Configuration;
 using CustomMenuMusic.Interfaces;
+using CustomMenuMusic.Util;
 using CustomMenuMusic.Views;
 using IPA.Utilities;
 using System;
@@ -29,12 +30,7 @@ namespace CustomMenuMusic
             get
             {
                 try {
-                    if (this.AudioSources?.Length > (uint)this.ActiveChannel) {
-                        return this.AudioSources[this.ActiveChannel].audioSource;
-                    }
-                    else {
-                        return null;
-                    }
+                    return this.AudioSources?.Length > (uint)this.ActiveChannel ? this.AudioSources[this.ActiveChannel].audioSource : null;
                 }
                 catch (Exception e) {
                     Logger.logger.Error(e);
@@ -42,16 +38,9 @@ namespace CustomMenuMusic
                 }
             }
         }
-        public SongPreviewPlayer.AudioSourceVolumeController[] AudioSources
-        {
-            get
-            {
-                if (!this.PreviewPlayer) {
-                    return null;
-                }
-                return this.PreviewPlayer.GetField<SongPreviewPlayer.AudioSourceVolumeController[], SongPreviewPlayer>("_audioSourceControllers");
-            }
-        }
+        public SongPreviewPlayer.AudioSourceVolumeController[] AudioSources => !this.PreviewPlayer
+                    ? null
+                    : this.PreviewPlayer.GetField<SongPreviewPlayer.AudioSourceVolumeController[], SongPreviewPlayer>("_audioSourceControllers");
         [Inject]
         private readonly INowPlayable nowPlay;
         [Inject]
@@ -72,7 +61,7 @@ namespace CustomMenuMusic
         #region Unity Message
         private void OnDisable()
         {
-            HMMainThreadDispatcher.instance.Enqueue(this.LoadAudioClip());
+            MainThreadInvoker.Instance.Enqueue(this.LoadAudioClip());
         }
 
         private async void Awake()
@@ -82,14 +71,14 @@ namespace CustomMenuMusic
             this.waitWhileMenuMusic = new WaitWhile(() => MenuMusic == null || !MenuMusic);
             this.waitWhileLoading = new WaitWhile(() => this._isLoadingAudioClip);
             if (!Directory.Exists(UserDataPath)) {
-                Directory.CreateDirectory(UserDataPath);
+                _ = Directory.CreateDirectory(UserDataPath);
             }
             await this.GetSongsListAsync();
         }
 
         private void Start()
         {
-            HMMainThreadDispatcher.instance.Enqueue(this.SetResultSong());
+            MainThreadInvoker.Instance.Enqueue(this.SetResultSong());
             this.Restart();
         }
 
@@ -123,14 +112,11 @@ namespace CustomMenuMusic
             return Task.Run(() =>
                          {
                              if (!Directory.Exists(Path.Combine(UserDataPath, MenuSongsPath))) {
-                                 Directory.CreateDirectory(Path.Combine(UserDataPath, MenuSongsPath));
+                                 _ = Directory.CreateDirectory(Path.Combine(UserDataPath, MenuSongsPath));
                              }
-                             if (useCustomMenuSongs && this.GetAllCustomMenuSongsAsync().Any()) {
-                                 this.filePathPicker = new RandomObjectPicker<string>(this.GetAllCustomMenuSongsAsync().ToArray(), 0f);
-                             }
-                             else {
-                                 this.filePathPicker = new RandomObjectPicker<string>(this.GetAllCustomSongsAsync().ToArray(), 0f);
-                             }
+                             this.filePathPicker = useCustomMenuSongs && this.GetAllCustomMenuSongsAsync().Any()
+                                 ? new RandomObjectPicker<string>(this.GetAllCustomMenuSongsAsync().ToArray(), 0f)
+                                 : new RandomObjectPicker<string>(this.GetAllCustomSongsAsync().ToArray(), 0f);
                              this._overrideCustomSongsList = !this.filePathPicker.GetField<string[], RandomObjectPicker<string>>("_objects").Any();
                          });
         }
@@ -148,7 +134,7 @@ namespace CustomMenuMusic
         private string GetResultSongPath()
         {
             if (!Directory.Exists(Path.Combine(UserDataPath, ResultSongsPath))) {
-                Directory.CreateDirectory(Path.Combine(UserDataPath, ResultSongsPath));
+                _ = Directory.CreateDirectory(Path.Combine(UserDataPath, ResultSongsPath));
             }
             return Directory.EnumerateFiles(Path.Combine(UserDataPath, ResultSongsPath), "*.wav", SearchOption.AllDirectories).FirstOrDefault();
         }
@@ -224,15 +210,15 @@ namespace CustomMenuMusic
 
         private void Restart()
         {
-            HMMainThreadDispatcher.instance.Enqueue(this.LoadAudioClip());
-            HMMainThreadDispatcher.instance.Enqueue(this.StopActiveAudioSource);
-            HMMainThreadDispatcher.instance.Enqueue(this.StartAudioSource());
+            MainThreadInvoker.Instance.Enqueue(this.LoadAudioClip());
+            MainThreadInvoker.Instance.Enqueue(this.StopActiveAudioSource);
+            MainThreadInvoker.Instance.Enqueue(this.StartAudioSource());
         }
 
         public void Next()
         {
-            HMMainThreadDispatcher.instance.Enqueue(this.LoadAudioClip());
-            HMMainThreadDispatcher.instance.Enqueue(this.StartAudioSource());
+            MainThreadInvoker.Instance.Enqueue(this.LoadAudioClip());
+            MainThreadInvoker.Instance.Enqueue(this.StartAudioSource());
         }
 
         private void StopActiveAudioSource()
