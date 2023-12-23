@@ -171,28 +171,28 @@ namespace CustomMenuMusic
             this._nowPlayingText.color = colors[colorIndex].Item1;
         }
 
-        internal static readonly List<Tuple<Color, string>> colors = new List<Tuple<Color, string>>()
+        internal static readonly List<(Color color, string colorName)> colors = new List<(Color color, string colorName)>
         {
-            { Color.white, "White" },
-            { Color.red, "Red" },
-            { Color.blue, "Blue" },
-            { Color.green, "Green" },
-            { Color.gray, "Gray" },
-            { Color.cyan, "Cyan" },
-            { Color.magenta, "Magenta" },
-            { Color.yellow, "Yellow" },
-            { Color.black, "Black" },
-            { MyColors.KlouderBlue, "Klouder Blue" },
-            { MyColors.ElectricBlue, "Electric Blue" },
-            { MyColors.MintGreen, "Mint Green" },
-            { MyColors.Mauve, "Mauve" },
-            { MyColors.Melrose, "Melrose" },
-            { MyColors.Pink, "Pink" },
-            { MyColors.Carnation, "Carnation" },
-            { MyColors.CarnationPink, "Carnation Pink" },
-            { MyColors.DabDab, "DabDab" },
-            { MyColors.HintOfGreen, "Hint of Green" },
-            { MyColors.BestGirl, "Best Girl" }
+            (Color.white, "White"),
+            (Color.red, "Red"),
+            (Color.blue, "Blue"),
+            (Color.green, "Green"),
+            (Color.gray, "Gray"),
+            (Color.cyan, "Cyan"),
+            (Color.magenta, "Magenta"),
+            (Color.yellow, "Yellow"),
+            (Color.black, "Black"),
+            (MyColors.KlouderBlue, "Klouder Blue"),
+            (MyColors.ElectricBlue, "Electric Blue"),
+            (MyColors.MintGreen, "Mint Green"),
+            (MyColors.Mauve, "Mauve"),
+            (MyColors.Melrose, "Melrose"),
+            (MyColors.Pink, "Pink"),
+            (MyColors.Carnation, "Carnation"),
+            (MyColors.CarnationPink, "Carnation Pink"),
+            (MyColors.DabDab, "DabDab"),
+            (MyColors.HintOfGreen, "Hint of Green"),
+            (MyColors.BestGirl, "Best Girl")
         };
     }
 
