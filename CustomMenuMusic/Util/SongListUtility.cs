@@ -56,7 +56,7 @@ namespace CustomMenuMusic.Util
                 this._levelFilteringNavigationController.UpdateCustomSongs();
                 var gridView = this._annotatedBeatmapLevelCollectionsViewController.GetField<AnnotatedBeatmapLevelCollectionsGridView, AnnotatedBeatmapLevelCollectionsViewController>("_annotatedBeatmapLevelCollectionsGridView");
                 gridView.SelectAndScrollToCellWithIdx(0);
-                var customSong = gridView.GetField<IReadOnlyList<IAnnotatedBeatmapLevelCollection>, AnnotatedBeatmapLevelCollectionsGridView>("_annotatedBeatmapLevelCollections").FirstOrDefault();
+                var customSong = gridView._annotatedBeatmapLevelCollections.FirstOrDefault();
                 this._annotatedBeatmapLevelCollectionsViewController.HandleDidSelectAnnotatedBeatmapLevelCollection(customSong);
                 var song = Loader.GetLevelById(levelID);
                 if (song == null) {
