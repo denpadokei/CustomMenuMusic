@@ -86,12 +86,13 @@ namespace CustomMenuMusic.Util
                 if (!BetterSongListPluginPresent) {
                     return;
                 }
-                var filerUI = Type.GetType("BetterSongList.UI.FilterUI, BetterSongList");
-                var filterUIInstance = filerUI.GetField("persistentNuts", BindingFlags.NonPublic | BindingFlags.Static).GetValue(filerUI);
-                var filterDorpDown = (DropdownWithTableView)filerUI.GetField("_filterDropdown", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(filterUIInstance);
-                if (filterDorpDown.selectedIndex != 6) {
-                    var setFilterMethod = filerUI.GetMethod("SetFilter", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
-                    _ = setFilterMethod.Invoke(filerUI, new object[] { "All", true, false });
+                var filterUI = Type.GetType("BetterSongList.UI.FilterUI, BetterSongList");
+                var filterUIInstance = filterUI.GetField("persistentNuts", BindingFlags.NonPublic | BindingFlags.Static).GetValue(filterUI);
+                var filterDorpDown = (DropdownWithTableView)filterUI.GetField("_filterDropdown", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(filterUIInstance);
+                var list = (List<object>)filterUI.GetField("_filterOptions", BindingFlags.Static | BindingFlags.NonPublic).GetValue(filterUI);
+                if (filterDorpDown.selectedIndex != list.Count - 1) {
+                    var setFilterMethod = filterUI.GetMethod("SetFilter", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
+                    _ = setFilterMethod.Invoke(filterUI, new object[] { "All", true, false });
                     this.ResetLevelCollectionTableSet();
                 }
             }
