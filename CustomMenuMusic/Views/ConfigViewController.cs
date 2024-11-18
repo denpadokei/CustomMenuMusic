@@ -105,7 +105,7 @@ namespace CustomMenuMusic.Views
         internal void CreateSettingsUI()
         {
             Logger.Log("Creating Settings UI", Logger.LogLevel.Debug);
-            BSMLSettings.instance.AddSettingsMenu("Custom Menu Music", "CustomMenuMusic.Views.ConfigViewController.bsml", this);
+            BSMLSettings.Instance.AddSettingsMenu("Custom Menu Music", "CustomMenuMusic.Views.ConfigViewController.bsml", this);
         }
 
         public void Initialize()
