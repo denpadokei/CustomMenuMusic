@@ -6,6 +6,26 @@ using System.Reflection;
 
 namespace CustomMenuMusic.Harmony
 {
+    /*
+     * int version,
+     * bool hasPrecalculatedData,
+     * string levelID,
+     * string songName,
+     * string songSubName,
+     * string songAuthorName,
+     * string[] allMappers,
+     * string[] allLighters,
+     * float beatsPerMinute,
+     * float integratedLufs,
+     * float songTimeOffset,
+     * float previewStartTime,
+     * float previewDuration,
+     * float songDuration,
+     * PlayerSensitivityFlag contentRating,
+     * IPreviewMediaData previewMediaData,
+     * Dictionary<(BeatmapCharacteristicSO, BeatmapDifficulty), BeatmapBasicData> beatmapBasicData
+     */
+
     /// <summary>
     /// 
     /// </summary>
@@ -17,9 +37,9 @@ namespace CustomMenuMusic.Harmony
     /// </remarks>
     [HarmonyPatch(typeof(BeatmapLevel), MethodType.Constructor,
         new Type[] {
-            typeof(bool), typeof(string), typeof(string), typeof(string), typeof(string),
+            typeof(int), typeof(bool), typeof(string), typeof(string), typeof(string), typeof(string),
             typeof(string[]), typeof(string[]), typeof(float), typeof(float), typeof(float),
-            typeof(float), typeof(float), typeof(float), typeof(PlayerSensitivityFlag), typeof(IPreviewMediaData), typeof(IReadOnlyDictionary<ValueTuple<BeatmapCharacteristicSO, BeatmapDifficulty>, BeatmapBasicData>) })]
+            typeof(float), typeof(float), typeof(float), typeof(PlayerSensitivityFlag), typeof(IPreviewMediaData), typeof(Dictionary<(BeatmapCharacteristicSO, BeatmapDifficulty), BeatmapBasicData>) })]
     public class CustomPreviewBeatmapLevelPreviewDurationPatch
     {
         public static void Prefix(float previewStartTime, float songDuration, ref float previewDuration)
