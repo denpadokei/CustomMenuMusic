@@ -6,35 +6,9 @@ using System.Reflection;
 
 namespace CustomMenuMusic.Harmony
 {
-    /*
-     * int version,
-     * bool hasPrecalculatedData,
-     * string levelID,
-     * string songName,
-     * string songSubName,
-     * string songAuthorName,
-     * string[] allMappers,
-     * string[] allLighters,
-     * float beatsPerMinute,
-     * float integratedLufs,
-     * float songTimeOffset,
-     * float previewStartTime,
-     * float previewDuration,
-     * float songDuration,
-     * PlayerSensitivityFlag contentRating,
-     * IPreviewMediaData previewMediaData,
-     * Dictionary<(BeatmapCharacteristicSO, BeatmapDifficulty), BeatmapBasicData> beatmapBasicData
-     */
-
     /// <summary>
     /// 
     /// </summary>
-    /// <remarks>
-    /// BeatmapLevel(
-    /// bool , string , string , string , string ,
-    /// string[] , string[] , float , float , float ,
-    /// float , float , float , PlayerSensitivityFlag , IPreviewMediaData , IReadOnlyDictionary<ValueTuple<BeatmapCharacteristicSO, BeatmapDifficulty>, BeatmapBasicData> )
-    /// </remarks>
     [HarmonyPatch(typeof(BeatmapLevel), MethodType.Constructor,
         new Type[] {
             typeof(int), typeof(bool), typeof(string), typeof(string), typeof(string), typeof(string),
